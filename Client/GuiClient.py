@@ -2,6 +2,7 @@ import tkinter as tk
 import logging
 import socket
 import sys
+import hashlib
 
 class Application:
     def __init__(self, window):
@@ -17,7 +18,7 @@ class Application:
 
     def send_login_info(self):
         username = self.username_entry.get()
-        password = self.password_entry.get()
+        password = hashlib.sha256(self.password_entry.get().encode()).hexdigest()
         io_stream_server = self.socket_to_server.makefile(mode='rw')
         io_stream_server.write(f"{username}\n")
         io_stream_server.write(f"{password}\n")
@@ -27,8 +28,8 @@ class Application:
         message = io_stream_server.readline().rstrip('\n')
         logging.info(f"Message from server: {message}")
 
-        # if message == "Login successful":
-        self.create_main_menu()
+        if message == "Login successful":
+            self.create_main_menu()
 
     def create_login_screen(self):
         # Create the username label and entry
