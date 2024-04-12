@@ -6,6 +6,7 @@ import logging
 import socket
 import pickle
 import threading
+import pandas as pd
 
 from ClientHandler import ClientHandler
 
