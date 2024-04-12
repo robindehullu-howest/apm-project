@@ -4,7 +4,7 @@ from queue import Queue
 from threading import Thread
 from tkinter import *
 
-from Server.server import Gui_Server
+from Server import Gui_Server
 
 
 class ServerWindow(Frame):
