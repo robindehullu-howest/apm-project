@@ -5,6 +5,8 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import threading
 import pickle
 import pandas as pd
+import matplotlib.pyplot as plt
+import io
 
 from Models.User import User
 
@@ -34,6 +36,8 @@ class ClientHandler(threading.Thread):
                 self.__handle_year()
             elif command == "PLAYLIST":
                 self.__handle_playlist()
+            elif command == "GRAPH":
+                self.__handle_graph()
 
             command = self.io_stream_client.readline().rstrip('\n')
 
@@ -119,7 +123,6 @@ class ClientHandler(threading.Thread):
         self.io_stream_client.write(f"{playlists}\n")
         self.io_stream_client.flush()
 
-
     def __get_playlists_of_song(self, song):
         # Filter the dataset to include only rows where the track name matches the input song
         playlist_data = self.data[self.data['track_name'] == song]
@@ -134,6 +137,25 @@ class ClientHandler(threading.Thread):
 
         return number_playlists
 
+    def __handle_graph(self):
+        # Get the number of streams for each year
+        year_streams = self.data.groupby('released_year')['streams'].sum()
+
+        # Plot the graph
+        plt.figure(figsize=(8, 6))
+        year_streams.plot(kind='bar')
+        plt.xlabel('Year')
+        plt.ylabel('Total Streams')
+        plt.title('Total Streams per Year')
+        
+        # Save the plot as a PNG image
+        img_bytes = io.BytesIO()
+        plt.savefig(img_bytes, format='png')
+        img_bytes.seek(0)
+
+        # Send the image to the client
+        self.io_stream_client.write(img_bytes.read())
+        self.io_stream_client.flush()
 
     def __print_message_gui_server(self, message):
         self.messages_queue.put(f"CLH {self.id}:> {message}")

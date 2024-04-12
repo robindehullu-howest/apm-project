@@ -1,9 +1,11 @@
+import io
 import tkinter as tk
 import logging
 import socket
 import sys
 import hashlib
 import ast
+from PIL import Image, ImageTk
 
 class Application:
     def __init__(self, window):
@@ -20,6 +22,7 @@ class Application:
 
         self.create_login_screen()
 
+#functions for the gui
 
     def send_login_info(self):
         username = self.username_entry.get()
@@ -35,7 +38,6 @@ class Application:
 
         if message == "Login successful":
             self.create_main_menu()
-
 
     def send_choice1(self):
         artist = self.artist_entry.get()
@@ -90,6 +92,9 @@ class Application:
         self.pop_songs_play["text"] = number_of_playlists
 
         logging.info(f"Song: {song}, Number of Spotify-Playlists: {number_of_playlists}")
+
+
+#windows for the gui
 
     def create_login_screen(self):
         # Create the username label and entry
@@ -146,7 +151,6 @@ class Application:
         self.pop_songs_artist_listbox = tk.Listbox(self.artist_window)
         self.pop_songs_artist_listbox.pack()
 
-
     def choice2(self):
 
         self.year_window = tk.Toplevel(window)
@@ -187,7 +191,24 @@ class Application:
         self.pop_songs_play.pack()
 
     def choice4(self):
-        pass
+        self.io_stream_server.write("GRAPH\n")
+        self.io_stream_server.flush()
+
+        logging.info("Waiting for answer from server...")
+        graph_image_bytes = self.io_stream_server.read()  # Receive graph image bytes from the server
+
+        # Convert the bytes to an image
+        img = Image.open(io.BytesIO(graph_image_bytes))
+        img = ImageTk.PhotoImage(img)
+
+        # Display the image in the graph_window
+        self.graph_window = tk.Toplevel(window)
+        self.graph_window.title("Streams per year")
+        self.graph_window.geometry("400x400")
+
+        img_label = tk.Label(self.graph_window, image=img)
+        img_label.image = img  # Keep a reference to prevent garbage collection
+        img_label.pack()
 
     def close_connection(self):
         logging.info("Close connection with server...")
