@@ -52,6 +52,8 @@ class Server(threading.Thread):
                 self.print_message_gui_server(f"Current Thread count: {threading.active_count()}.")
         except Exception as ex:
             self.print_message_gui_server("Server socket closed")
+            self.print_message_gui_server(ex)
+            logging.error(f"Error in Server: {ex}")
 
     def print_message_gui_server(self, message):
         self.message_queue.put(f"Server:> {message}")

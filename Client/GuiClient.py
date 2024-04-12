@@ -3,6 +3,7 @@ import logging
 import socket
 import sys
 import hashlib
+import ast
 
 class Application:
     def __init__(self, window):
@@ -35,34 +36,43 @@ class Application:
 
     def send_choice1(self):
         artist = self.artist_entry.get()
-        io_stream_server = self.socket_to_server.makefile(mode='rw')
-        io_stream_server.write(f"{artist}\n")
-        io_stream_server.flush()
+        self.io_stream_server.write("ARTIST\n")
+        self.io_stream_server.write(f"{artist}\n")
+        self.io_stream_server.flush()
 
         logging.info("Waiting for answer from server...")
-        artist_name = io_stream_server.readline().rstrip('\n') 
-        popular_songs_str = io_stream_server.readline().rstrip('\n')
+        artist_name = self.io_stream_server.readline().rstrip('\n') 
+        popular_songs_str = self.io_stream_server.readline().rstrip('\n')
         popular_songs = popular_songs_str.split(';') 
 
         logging.info(f"Artist: {artist_name}, Popular Songs: {popular_songs}")
 
-        self.popular_songs_listbox.delete(0, tk.END) #vorige opvraging verwijderen
+        self.pop_songs_artist_listbox.delete(0, tk.END) #vorige opvraging verwijderen
         for song in popular_songs:
-            self.popular_songs_listbox.insert(tk.END, song)
+            self.pop_songs_artist_listbox.insert(tk.END, song)
 
     def send_choice2(self):
-        year = self.artist_entry.get()
-        io_stream_server = self.socket_to_server.makefile(mode='rw')
-        io_stream_server.write(f"{year}\n")
-        io_stream_server.flush()
+        year = self.year_entry.get()
+        self.io_stream_server.write("YEAR\n")
+        self.io_stream_server.write(f"{year}\n")
+        self.io_stream_server.flush()
 
         logging.info("Waiting for answer from server...")
-        year = io_stream_server.readline().rstrip('\n') 
-        popular_song_str = io_stream_server.readline().rstrip('\n')
-        popular_song = popular_song_str.split(';') 
-
-        logging.info(f"Year: {year}, Popular Song: {popular_song}")
-
+        year = self.io_stream_server.readline().rstrip('\n') 
+        popular_song_str = self.io_stream_server.readline().rstrip('\n')
+        
+        if popular_song_str:  # Check if the string is not empty
+            popular_song_list = ast.literal_eval(popular_song_str)
+        
+            self.pop_songs_year_listbox.delete(0, tk.END)  # vorige opvraging verwijderen
+            for song in popular_song_list:
+                artists = ', '.join(ast.literal_eval(song[0]))  # Parse the artist list and join the names together
+                song_name = song[1]
+                self.pop_songs_year_listbox.insert(tk.END, f"{artists}: {song_name}")
+        
+            logging.info(f"Year: {year}, Popular Songs: {popular_song_list}")
+        else:
+            logging.info(f"No popular songs received for the year: {year}")
 
 
     def create_login_screen(self):
@@ -115,11 +125,11 @@ class Application:
         self.songs_button = tk.Button(self.artist_window, text="Get popular songs for artist", command=self.send_choice1)
         self.songs_button.pack()
 
-        self.popular_songs_label = tk.Label(self.artist_window, text="Popular Songs:")
-        self.popular_songs_label.pack()
+        pop_songs_artist_label = tk.Label(self.artist_window, text="Popular Songs:")
+        pop_songs_artist_label.pack()
 
-        self.popular_songs_listbox = tk.Listbox(self.artist_window)
-        self.popular_songs_listbox.pack()
+        self.pop_songs_artist_listbox = tk.Listbox(self.artist_window)
+        self.pop_songs_artist_listbox.pack()
 
 
     def choice2(self):
@@ -134,10 +144,17 @@ class Application:
         self.songs_button = tk.Button(self.year_window, text="Get popular songs", command=self.send_choice2)
         self.songs_button.pack()
 
+        pop_songs_year_label = tk.Label(self.year_window, text="Popular Songs:")
+        pop_songs_year_label.pack()
+
+        self.pop_songs_year_listbox = tk.Listbox(self.year_window)
+        self.pop_songs_year_listbox.pack()
 
     def choice3(self):
         pass
 
+    def choice4(self):
+        pass
 
     def close_connection(self):
         logging.info("Close connection with server...")

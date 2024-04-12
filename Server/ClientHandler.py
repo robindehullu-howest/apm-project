@@ -4,6 +4,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import threading
 import pickle
+import pandas as pd
 
 from Models.User import User
 
@@ -15,6 +16,7 @@ class ClientHandler(threading.Thread):
         self.socket_to_client = socketclient
         self.io_stream_client = self.socket_to_client.makefile(mode='rw')
         self.messages_queue = messages_queue
+        self.data = pd.read_csv("./Data/spotify_data.csv")
         self.id = ClientHandler.clienthandler_count
         ClientHandler.clienthandler_count += 1
 
@@ -22,8 +24,14 @@ class ClientHandler(threading.Thread):
         self.__print_message_gui_server("Started & waiting...")
         command = self.io_stream_client.readline().rstrip('\n')
         while command != "CLOSE":
+            self.__print_message_gui_server(f"Command received: {command}")
+
             if command == "LOGIN":
                 self.__handle_login()
+            elif command == "ARTIST":
+                self.__handle_artist()
+            elif command == "YEAR":
+                self.__handle_year()
 
             command = self.io_stream_client.readline().rstrip('\n')
 
@@ -52,57 +60,54 @@ class ClientHandler(threading.Thread):
             except EOFError:
                 break
     
-    # def handle_client_requests(self, my_writer_obj):
-    # while True:
-    #     artist = my_writer_obj.readline().rstrip('\n')  # Receive artist's name
-    #     if not artist:
-    #         break
-        
-    #     # Process artist's name to get popular songs
-    #     popular_songs = self.__get_popular_songs(artist)
+    def __handle_artist(self):
+        artist = self.io_stream_client.readline().rstrip('\n')
+        popular_songs = self.__get_popular_songs_of_artist(artist)
 
-    #     # Send artist's name and popular songs back to client
-    #     my_writer_obj.write(f"{artist}\n")
-    #     my_writer_obj.write(f"{';'.join(popular_songs)}\n")  # Send popular songs separated by ';'
+        self.io_stream_client.write(f"{artist}\n")
+        self.io_stream_client.write(f"{';'.join(popular_songs)}\n")
+        self.io_stream_client.write("Artist and songs sent successfully\n" if popular_songs else f"Failed to get popular songs for artist {artist}\n")
+        self.io_stream_client.flush()
 
-    #     # Send message to client indicating success or failure
-    #     if popular_songs:
-    #         my_writer_obj.write("Artist and songs sent successfully\n")
-    #     else:
-    #         my_writer_obj.write("Failed to get popular songs for artist\n")
-    #     my_writer_obj.flush()
+    def __get_popular_songs_of_artist(self, artist):
+        artist_data = self.data[self.data['artist(s)_name'].apply(lambda x: artist.lower() in x.lower())]
 
-    # def __get_popular_songs(self, artist):
-    #     artist_data = self.data[self.data['artist(s)_name'].apply(lambda x: artist.lower() in x.lower())]
+        if artist_data.empty:
+            return None
 
-    #     if artist_data.empty:
-    #         return []
+        # Sort the filtered dataset based on the number of streams in descending order
+        sorted_data = artist_data.sort_values(by='streams', ascending=False)
 
-    #     # Sort the filtered dataset based on the number of streams in descending order
-    #     sorted_data = artist_data.sort_values(by='streams', ascending=False)
+        # Retrieve the top 4 songs from the sorted dataset
+        top_songs = sorted_data['track_name'].head(4).tolist()
 
-    #     # Retrieve the top 4 songs from the sorted dataset
-    #     top_songs = sorted_data['track_name'].head(4).tolist()
+        print(f"Top songs of {artist}: {top_songs}")
 
-    #     print(f"Top songs of {artist}: {top_songs}")
-
-    #     return top_songs
+        return top_songs
     
-    # def __get_popular_year(self, year):
-    #     year_data = self.data[self.data['released_year'] == year]
+    def __handle_year(self):
+        year = int(self.io_stream_client.readline().rstrip('\n'))
+        popular_songs = self.__get_popular_songs_of_year(year)
 
-    #     if year_data.empty:
-    #         return []
+        self.io_stream_client.write(f"{year}\n")
+        self.io_stream_client.write(f"{popular_songs}\n")
+        self.io_stream_client.flush()
+    
+    def __get_popular_songs_of_year(self, year):
+        year_data = self.data[self.data['released_year'] == year]
 
-    #     # Sort the filtered dataset based on the number of streams in descending order
-    #     sorted_data = year_data.sort_values(by='streams', ascending=False)
+        if year_data.empty:
+            return None
 
-    #     # Retrieve the top 4 songs from the sorted dataset
-    #     top_songs = sorted_data[['artist(s)_name', 'track_name']].head(4).values.tolist()
+        # Sort the filtered dataset based on the number of streams in descending order
+        sorted_data = year_data.sort_values(by='streams', ascending=False)
 
-    #     print(f"Top songs of {year}: {top_songs}")
+        # Retrieve the top 4 songs from the sorted dataset
+        top_songs = sorted_data[['artist(s)_name', 'track_name']].head(4).values.tolist()
 
-    #     return top_songs
+        print(f"Top songs of {year}: {top_songs}")
+
+        return top_songs
 
     def __print_message_gui_server(self, message):
         self.messages_queue.put(f"CLH {self.id}:> {message}")
