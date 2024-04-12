@@ -16,7 +16,10 @@ class Application:
         logging.info("Making connection with server...")
         self.socket_to_server.connect((host, port))
 
+        self.window.geometry("600x400")
+
         self.create_login_screen()
+
 
     def send_login_info(self):
         username = self.username_entry.get()
@@ -74,6 +77,19 @@ class Application:
         else:
             logging.info(f"No popular songs received for the year: {year}")
 
+    def send_choice3(self):
+        song = self.play_entry.get()
+        self.io_stream_server.write("PLAYLIST\n")
+        self.io_stream_server.write(f"{song}\n")
+        self.io_stream_server.flush()
+
+        logging.info("Waiting for answer from server...")
+        song = self.io_stream_server.readline().rstrip('\n') 
+        number_of_playlists = self.io_stream_server.readline().rstrip('\n')
+
+        self.pop_songs_play["text"] = number_of_playlists
+
+        logging.info(f"Song: {song}, Number of Spotify-Playlists: {number_of_playlists}")
 
     def create_login_screen(self):
         # Create the username label and entry
@@ -114,13 +130,12 @@ class Application:
     def choice1(self):
         self.artist_window = tk.Toplevel(window)
         self.artist_window.title("Artist")
-
+        self.artist_window.geometry("400x400")
 
         self.artist_label = tk.Label(self.artist_window, text="Artist:")
         self.artist_label.pack()
         self.artist_entry = tk.Entry(self.artist_window)
         self.artist_entry.pack()
-
 
         self.songs_button = tk.Button(self.artist_window, text="Get popular songs for artist", command=self.send_choice1)
         self.songs_button.pack()
@@ -133,8 +148,10 @@ class Application:
 
 
     def choice2(self):
+
         self.year_window = tk.Toplevel(window)
         self.year_window.title("popular songs (year)")
+        self.year_window.geometry("400x400")
 
         self.year_label = tk.Label(self.year_window, text="Enter year:")
         self.year_label.pack()
@@ -151,7 +168,23 @@ class Application:
         self.pop_songs_year_listbox.pack()
 
     def choice3(self):
-        pass
+        self.play_window = tk.Toplevel(window)
+        self.play_window.title("Spotify-playlists where song is found")
+        self.play_window.geometry("400x400")
+
+        self.play_label = tk.Label(self.play_window, text="Enter song:")
+        self.play_label.pack()
+        self.play_entry = tk.Entry(self.play_window)
+        self.play_entry.pack()
+
+        self.songs_button = tk.Button(self.play_window, text="Get Spotify-playlists", command=self.send_choice3)
+        self.songs_button.pack()
+
+        pop_songs_play_label = tk.Label(self.play_window, text="Number of Spotify-Playlists:")
+        pop_songs_play_label.pack()
+
+        self.pop_songs_play = tk.Label(self.play_window)
+        self.pop_songs_play.pack()
 
     def choice4(self):
         pass

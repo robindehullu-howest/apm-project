@@ -16,7 +16,7 @@ class ClientHandler(threading.Thread):
         self.socket_to_client = socketclient
         self.io_stream_client = self.socket_to_client.makefile(mode='rw')
         self.messages_queue = messages_queue
-        self.data = pd.read_csv("./Data/spotify_data.csv")
+        self.data = pd.read_csv("../Data/spotify_data.csv")
         self.id = ClientHandler.clienthandler_count
         ClientHandler.clienthandler_count += 1
 
@@ -32,6 +32,8 @@ class ClientHandler(threading.Thread):
                 self.__handle_artist()
             elif command == "YEAR":
                 self.__handle_year()
+            elif command == "PLAYLIST":
+                self.__handle_playlist()
 
             command = self.io_stream_client.readline().rstrip('\n')
 
@@ -50,7 +52,7 @@ class ClientHandler(threading.Thread):
         self.__print_message_gui_server(message)
     
     def __check_credentials(self, input_user: User):
-        my_reader_obj = open("./Data/users.txt", mode='rb')
+        my_reader_obj = open("../Data/users.txt", mode='rb')
         while True:
             try:
                 stored_user = pickle.load(my_reader_obj)
@@ -108,6 +110,30 @@ class ClientHandler(threading.Thread):
         print(f"Top songs of {year}: {top_songs}")
 
         return top_songs
+
+    def __handle_playlist(self):
+        song = self.io_stream_client.readline().rstrip('\n')
+        playlists = self.__get_playlists_of_song(song)
+
+        self.io_stream_client.write(f"{song}\n")
+        self.io_stream_client.write(f"{playlists}\n")
+        self.io_stream_client.flush()
+
+
+    def __get_playlists_of_song(self, song):
+        # Filter the dataset to include only rows where the track name matches the input song
+        playlist_data = self.data[self.data['track_name'] == song]
+
+        if playlist_data.empty:
+            return None
+        
+        # Count the number of playlists the song appears in
+        number_playlists = playlist_data['in_spotify_playlists']
+
+        print(f"Number of Spotify playlists {song} is in: {number_playlists}")
+
+        return number_playlists
+
 
     def __print_message_gui_server(self, message):
         self.messages_queue.put(f"CLH {self.id}:> {message}")
