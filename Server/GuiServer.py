@@ -1,10 +1,14 @@
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 import logging
 import socket
 from queue import Queue
 from threading import Thread
 from tkinter import *
 
-from Server.server import Gui_Server
+from Server import Server
 
 
 class ServerWindow(Frame):
@@ -42,7 +46,7 @@ class ServerWindow(Frame):
 
     def init_server(self):
         # server - init
-        self.server = Gui_Server(socket.gethostname(), 9999, self.messages_queue)
+        self.server = Server(socket.gethostname(), 9999, self.messages_queue)
 
     # def __del__(self):
     #     print("afsluiten server")

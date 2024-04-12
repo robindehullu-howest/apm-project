@@ -8,6 +8,7 @@ class Application:
     def __init__(self, window):
         self.window = window
         self.socket_to_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.io_stream_server = self.socket_to_server.makefile(mode='rw')
         host = socket.gethostname()
         port = 9999
 
@@ -19,13 +20,13 @@ class Application:
     def send_login_info(self):
         username = self.username_entry.get()
         password = hashlib.sha256(self.password_entry.get().encode()).hexdigest()
-        io_stream_server = self.socket_to_server.makefile(mode='rw')
-        io_stream_server.write(f"{username}\n")
-        io_stream_server.write(f"{password}\n")
-        io_stream_server.flush()
+        self.io_stream_server.write("LOGIN\n")
+        self.io_stream_server.write(f"{username}\n")
+        self.io_stream_server.write(f"{password}\n")
+        self.io_stream_server.flush()
 
         logging.info("Waiting for answer from server...")
-        message = io_stream_server.readline().rstrip('\n')
+        message = self.io_stream_server.readline().rstrip('\n')
         logging.info(f"Message from server: {message}")
 
         if message == "Login successful":
@@ -76,6 +77,9 @@ class Application:
 
     def close_connection(self):
         logging.info("Close connection with server...")
+        self.io_stream_server.write("CLOSE\n")
+        self.io_stream_server.flush()
+        self.io_stream_server.close()
         self.socket_to_server.close()
 
 
