@@ -1,5 +1,12 @@
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 import logging
 import socket
+import pickle
+
+from Models.User import User
 
 logging.basicConfig(level=logging.INFO)
 
@@ -33,8 +40,9 @@ class Server:
             username = my_writer_obj.readline().rstrip('\n')
             password = my_writer_obj.readline().rstrip('\n')
 
-            my_writer_obj.write(f"{username}\n")
-            my_writer_obj.write(f"{password}\n")
+            is_valid = self.__check_credentials(username, password)
+            message = "Login successful\n" if is_valid else "Login failed\n"
+            my_writer_obj.write(message)
             my_writer_obj.flush()
 
             logging.info("Received close message. Closing connection...")
@@ -45,7 +53,19 @@ class Server:
         if self.serversocket:
             self.serversocket.close()
 
-# Usage example:
+    def __check_credentials(self, username, password):
+        my_reader_obj = open("./Data/users.txt", mode='rb')
+        while True:
+            try:
+                user = pickle.load(my_reader_obj)
+                if user.username == username and user.password == password:
+                    my_reader_obj.close()
+                    return True
+            except EOFError:
+                break
+        my_reader_obj.close()
+        return False
+
 if __name__ == "__main__":
     server = Server(socket.gethostname(), 9999)
     server.start()

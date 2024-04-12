@@ -2,81 +2,95 @@ import tkinter as tk
 import logging
 import socket
 import sys
+import hashlib
 
+class Application:
+    def __init__(self, window):
+        self.window = window
+        self.socket_to_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        host = socket.gethostname()
+        port = 9999
+
+        logging.info("Making connection with server...")
+        self.socket_to_server.connect((host, port))
+
+        self.create_login_screen()
+
+    def send_login_info(self):
+        username = self.username_entry.get()
+        password = hashlib.sha256(self.password_entry.get().encode()).hexdigest()
+        io_stream_server = self.socket_to_server.makefile(mode='rw')
+        io_stream_server.write(f"{username}\n")
+        io_stream_server.write(f"{password}\n")
+        io_stream_server.flush()
+
+        logging.info("Waiting for answer from server...")
+        message = io_stream_server.readline().rstrip('\n')
+        logging.info(f"Message from server: {message}")
+
+        if message == "Login successful":
+            self.create_main_menu()
+
+    def create_login_screen(self):
+        # Create the username label and entry
+        self.username_label = tk.Label(self.window, text="Username:")
+        self.username_label.pack()
+        self.username_entry = tk.Entry(self.window)
+        self.username_entry.pack()
+
+        # Create the password label and entry
+        self.password_label = tk.Label(self.window, text="Password:")
+        self.password_label.pack()
+        self.password_entry = tk.Entry(self.window, show="*")
+        self.password_entry.pack()
+
+        # Create the login button
+        self.login_button = tk.Button(self.window, text="Login", command=self.send_login_info)
+        self.login_button.pack()
+
+    def create_main_menu(self):
+        # Unpack the login screen widgets
+        self.username_label.pack_forget()
+        self.username_entry.pack_forget()
+        self.password_label.pack_forget()
+        self.password_entry.pack_forget()
+        self.login_button.pack_forget()
+
+        # Create the main menu widgets
+        self.choice1_button = tk.Button(self.window, text="Get popular songs of artist", command=self.choice1)
+        self.choice1_button.pack()
+
+        self.choice2_button = tk.Button(self.window, text="Most popular songs per year", command=self.choice2)
+        self.choice2_button.pack()
+
+    def choice1(self):
+        artist_window = tk.Toplevel(window)
+        artist_window.title("Artist")
+        artist_label = tk.Label(window, text="Artist:")
+        artist_label.pack()
+        songs_button = tk.Button(window, text="Get popular songs")
+        songs_button.pack()
+
+    def choice2(self):
+        pass  # Implement this method
+
+    def close_connection(self):
+        logging.info("Close connection with server...")
+        self.socket_to_server.close()
+
+
+# Set up logging
 logging.basicConfig(level=logging.INFO)
-
-logging.info("Making connection with server...")
-
-# create a socket object
-socket_to_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-# get local machine name
-host = socket.gethostname()
-port = 9999
-
-# connection to hostname on the port.
-socket_to_server.connect((host, port))
-
-def login():
-    # Create the username label and entry
-    username_label = tk.Label(window, text="Username:")
-    username_label.pack()
-    username_entry = tk.Entry(window)
-    username_entry.pack()
-
-    # Create the password label and entry
-    password_label = tk.Label(window, text="Password:")
-    password_label.pack()
-    password_entry = tk.Entry(window, show="*")
-    password_entry.pack()
-
-    # Create the login button
-    login_button = tk.Button(window, text="Login", command=login)
-    login_button.config(command=show_choices)
-    login_button.pack()
-
-    username = username_entry.get()
-    password = password_entry.get()
-    io_stream_server = socket_to_server.makefile(mode='rw')
-    io_stream_server.write(f"{username}\n")
-    io_stream_server.write(f"{password}\n")
-    io_stream_server.flush()
-
-    print("Waiting for answer from server...")
-    message = io_stream_server.readline().rstrip('\n')
-    print(f"Message from server: {message}")
-
-def show_choices():
-    # Create a new window for choices
-    choices_window = tk.Toplevel(window)
-    choices_window.title("Top Spotify Songs")
-
-    # Create the choices/buttons
-    choice1_button = tk.Button(choices_window, text="Get popular songs of artist")
-    choice1_button.config(command=choice1)
-    choice1_button.pack()
-
-    choice2_button = tk.Button(choices_window, text="Most popular songs per year")
-    choice2_button.pack()
-
-def choice1():
-    artist_window = tk.Toplevel(window)
-    artist_window.title("Artist")
-    artist_label = tk.Label(window, text="Artist:")
-    artist_label.pack()
-    songs_button = tk.Button(window, text="Get popular songs")
-    songs_button.pack()
-
-
-logging.info("Close connection with server...")
 
 # Create the main window
 window = tk.Tk()
 window.title("GUI Client")
-login()
 
+# Create the application
+app = Application(window)
 
 # Start the main loop
 window.mainloop()
 
-socket_to_server.close()
+# Close the connection
+app.close_connection()
