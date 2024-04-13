@@ -1,5 +1,6 @@
 import io
 import tkinter as tk
+from tkinter import ttk
 import logging
 import socket
 import sys
@@ -18,6 +19,7 @@ class Application:
 
         self.messages = {}
         self.answers = {}
+        
 
         logging.info("Making connection with server...")
         self.socket_to_server.connect((host, port))
@@ -110,20 +112,17 @@ class Application:
 #windows for the gui
 
     def create_login_screen(self):
-        # Create the username label and entry
-        self.username_label = tk.Label(self.window, text="Username:")
+        self.username_label = tk.Label(self.window, text="Username:", bg="#2d2d3d", fg="white")
         self.username_label.pack()
         self.username_entry = tk.Entry(self.window)
         self.username_entry.pack()
 
-        # Create the password label and entry
-        self.password_label = tk.Label(self.window, text="Password:")
+        self.password_label = tk.Label(self.window, text="Password:", bg="#2d2d3d", fg="white")
         self.password_label.pack()
         self.password_entry = tk.Entry(self.window, show="*")
         self.password_entry.pack()
 
-        # Create the login button
-        self.login_button = tk.Button(self.window, text="Login", command=self.send_login_info)
+        self.login_button = tk.Button(self.window, text="Login", command=self.send_login_info, bg="#7474ab", fg="white")
         self.login_button.pack()
 
     def create_main_menu(self):
@@ -133,32 +132,33 @@ class Application:
         self.password_entry.pack_forget()
         self.login_button.pack_forget()
 
-        self.choice1_button = tk.Button(self.window, text="Get popular songs of artist", command=self.choice1)
+        self.choice1_button = tk.Button(self.window, text="Get popular songs of artist", command=self.choice1, bg="#7474ab", fg="white")
         self.choice1_button.pack()
 
-        self.choice2_button = tk.Button(self.window, text="Most popular songs per year", command=self.choice2)
+        self.choice2_button = tk.Button(self.window, text="Most popular songs per year", command=self.choice2, bg="#7474ab", fg="white")
         self.choice2_button.pack()
 
-        self.choice3_button = tk.Button(self.window, text="Number of Spotify-playlists where song is found", command=self.choice3)
+        self.choice3_button = tk.Button(self.window, text="Number of Spotify-playlists where song is found", command=self.choice3, bg="#7474ab", fg="white")
         self.choice3_button.pack()
 
-        self.choice4_button = tk.Button(self.window, text="Graph of total streams per year", command=self.choice4)
+        self.choice4_button = tk.Button(self.window, text="Graph of total streams per year", command=self.choice4, bg="#7474ab", fg="white")
         self.choice4_button.pack()
 
     def choice1(self):
         self.artist_window = tk.Toplevel(window)
         self.artist_window.title("Artist")
         self.artist_window.geometry("400x400")
+        self.artist_window.configure(bg="#2d2d3d")
 
-        self.artist_label = tk.Label(self.artist_window, text="Artist:")
+        self.artist_label = tk.Label(self.artist_window, text="Artist:", bg="#2d2d3d", fg="white")
         self.artist_label.pack()
         self.artist_entry = tk.Entry(self.artist_window)
         self.artist_entry.pack()
 
-        self.songs_button = tk.Button(self.artist_window, text="Get popular songs for artist", command=self.send_choice1)
+        self.songs_button = tk.Button(self.artist_window, text="Get popular songs for artist", command=self.send_choice1, bg="#7474ab", fg="white")
         self.songs_button.pack()
 
-        pop_songs_artist_label = tk.Label(self.artist_window, text="Popular Songs:")
+        pop_songs_artist_label = tk.Label(self.artist_window, text="Popular Songs:", bg="#2d2d3d", fg="white")
         pop_songs_artist_label.pack()
 
         self.pop_songs_artist_listbox = tk.Listbox(self.artist_window)
@@ -169,16 +169,18 @@ class Application:
         self.year_window = tk.Toplevel(window)
         self.year_window.title("popular songs (year)")
         self.year_window.geometry("400x400")
+        self.year_window.configure(bg="#2d2d3d")
 
-        self.year_label = tk.Label(self.year_window, text="Enter year:")
+
+        self.year_label = tk.Label(self.year_window, text="Enter year:", bg="#2d2d3d", fg="white")
         self.year_label.pack()
         self.year_entry = tk.Entry(self.year_window)
         self.year_entry.pack()
 
-        self.songs_button = tk.Button(self.year_window, text="Get popular songs", command=self.send_choice2)
+        self.songs_button = tk.Button(self.year_window, text="Get popular songs", command=self.send_choice2, bg="#7474ab", fg="white")
         self.songs_button.pack()
 
-        pop_songs_year_label = tk.Label(self.year_window, text="Popular Songs:")
+        pop_songs_year_label = tk.Label(self.year_window, text="Popular Songs:", bg="#2d2d3d", fg="white")
         pop_songs_year_label.pack()
 
         self.pop_songs_year_listbox = tk.Listbox(self.year_window)
@@ -188,16 +190,18 @@ class Application:
         self.play_window = tk.Toplevel(window)
         self.play_window.title("Spotify-playlists where song is found")
         self.play_window.geometry("400x400")
+        self.play_window.configure(bg="#2d2d3d")
 
-        self.play_label = tk.Label(self.play_window, text="Enter song:")
+
+        self.play_label = tk.Label(self.play_window, text="Enter song:", bg="#2d2d3d", fg="white")
         self.play_label.pack()
         self.play_entry = tk.Entry(self.play_window)
         self.play_entry.pack()
 
-        self.songs_button = tk.Button(self.play_window, text="Get Spotify-playlists", command=self.send_choice3)
+        self.songs_button = tk.Button(self.play_window, text="Get Spotify-playlists", command=self.send_choice3, bg="#7474ab", fg="white")
         self.songs_button.pack()
 
-        pop_songs_play_label = tk.Label(self.play_window, text="Number of Spotify-Playlists:")
+        pop_songs_play_label = tk.Label(self.play_window, text="Number of Spotify-Playlists:", bg="#2d2d3d", fg="white")
         pop_songs_play_label.pack()
 
         self.pop_songs_play = tk.Label(self.play_window)
@@ -222,6 +226,8 @@ class Application:
         self.graph_window = tk.Toplevel(window)
         self.graph_window.title("Streams per year")
         self.graph_window.geometry("900x700")
+        self.graph_window.configure(bg="#2d2d3d")
+
 
         img_label = tk.Label(self.graph_window, image=img)
         img_label.image = img
@@ -240,6 +246,8 @@ logging.basicConfig(level=logging.INFO)
 
 window = tk.Tk()
 window.title("GUI Client")
+
+window.configure(bg="#2d2d3d") 
 
 app = Application(window)
 
