@@ -6,6 +6,7 @@ import sys
 import hashlib
 import ast
 from PIL import Image, ImageTk
+import base64
 
 class Application:
     def __init__(self, window):
@@ -72,7 +73,7 @@ class Application:
         year = self.io_stream_server.readline().rstrip('\n') 
         popular_song_str = self.io_stream_server.readline().rstrip('\n')
         
-        if popular_song_str:  # Check if the string is not empty
+        if popular_song_str: 
             popular_song_list = ast.literal_eval(popular_song_str)
         
             self.messages["choice2"] = "YEAR"
@@ -80,7 +81,7 @@ class Application:
 
             self.pop_songs_year_listbox.delete(0, tk.END)  # vorige opvraging verwijderen
             for song in popular_song_list:
-                artists = ', '.join(ast.literal_eval(song[0]))  # Parse the artist list and join the names together
+                artists = ', '.join(ast.literal_eval(song[0]))
                 song_name = song[1]
                 self.pop_songs_year_listbox.insert(tk.END, f"{artists}: {song_name}")
         
@@ -206,34 +207,25 @@ class Application:
         self.io_stream_server.write("GRAPH\n")
         self.io_stream_server.flush()
 
-        logging.info("Waiting for answer from server...")
+        logging.info("Waiting for graph from server...")
+        img_string = self.io_stream_server.readline().rstrip('\n')
 
-        # Store message for choice 4
-        self.messages["choice4"] = "GRAPH"
+        img_bytes = base64.b64decode(img_string)
 
-        # Read the response from the server
-        graph_image_bytes = self.io_stream_server.read()
+        img = Image.open(io.BytesIO(img_bytes))
 
-        # Process the response
-        try:
-            # Convert the bytes to an image
-            img = Image.open(io.BytesIO(graph_image_bytes))
-            img = ImageTk.PhotoImage(img)
+        window_width = 800
+        window_height = 600
+        img = img.resize((window_width, window_height))
+        img = ImageTk.PhotoImage(img)
 
-            # Store the answer for choice 4
-            self.answers["choice4"] = img
+        self.graph_window = tk.Toplevel(window)
+        self.graph_window.title("Streams per year")
+        self.graph_window.geometry("900x700")
 
-            # Display the image in the graph_window
-            self.graph_window = tk.Toplevel(window)
-            self.graph_window.title("Streams per year")
-            self.graph_window.geometry("400x400")
-
-            img_label = tk.Label(self.graph_window, image=img)
-            img_label.image = img  # Keep a reference to prevent garbage collection
-            img_label.pack()
-
-        except Exception as e:
-            logging.error(f"Error displaying graph image: {e}")
+        img_label = tk.Label(self.graph_window, image=img)
+        img_label.image = img
+        img_label.pack()
 
 
     def close_connection(self):
@@ -244,18 +236,13 @@ class Application:
         self.socket_to_server.close()
 
 
-# Set up logging
 logging.basicConfig(level=logging.INFO)
 
-# Create the main window
 window = tk.Tk()
 window.title("GUI Client")
 
-# Create the application
 app = Application(window)
 
-# Start the main loop
 window.mainloop()
 
-# Close the connection
 app.close_connection()

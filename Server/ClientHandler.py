@@ -87,7 +87,7 @@ class ClientHandler(threading.Thread):
 
         sorted_data = artist_data.sort_values(by='streams', ascending=False)
 
-        top_songs = sorted_data['track_name'].head(4).tolist()
+        top_songs = sorted_data['track_name'].head(5).tolist()
 
         print(f"Top songs of {artist}: {top_songs}")
 
@@ -152,16 +152,13 @@ class ClientHandler(threading.Thread):
         plt.ylabel('Total Streams')
         plt.title('Total Streams per Year')
 
-        # Save the plot as a PNG image
         img_bytes = io.BytesIO()
         plt.savefig(img_bytes, format='png')
         img_bytes.seek(0)
 
-        # Encode the image bytes to base64 string
         img_string = base64.b64encode(img_bytes.read()).decode()
 
-        # Send the encoded image string to the client
-        self.io_stream_client.write(img_string)
+        self.io_stream_client.write(f"{img_string}\n")
         self.io_stream_client.flush()
 
 
