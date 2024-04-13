@@ -8,6 +8,9 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import io
 import base64
+import json
+import logging
+import ast
 
 from Models.User import User
 
@@ -19,7 +22,7 @@ class ClientHandler(threading.Thread):
         self.socket_to_client = socketclient
         self.io_stream_client = self.socket_to_client.makefile(mode='rw')
         self.messages_queue = messages_queue
-        self.data = pd.read_csv("../Data/spotify_data.csv")
+        self.data = pd.read_csv("./Data/spotify_data.csv")
         self.id = ClientHandler.clienthandler_count
         ClientHandler.clienthandler_count += 1
 
@@ -57,7 +60,7 @@ class ClientHandler(threading.Thread):
         self.__print_message_gui_server(message)
     
     def __check_credentials(self, input_user: User):
-        my_reader_obj = open("../Data/users.txt", mode='rb')
+        my_reader_obj = open("./Data/users.txt", mode='rb')
         while True:
             try:
                 stored_user = pickle.load(my_reader_obj)
@@ -75,8 +78,8 @@ class ClientHandler(threading.Thread):
         if popular_songs is not None:
             self.io_stream_client.write(f"{';'.join(popular_songs)}\n")
             # self.io_stream_client.write("Artist and songs sent successfully\n")
-        # else:
-            # self.io_stream_client.write("Failed to get popular songs for artist\n")
+        else:
+            self.io_stream_client.write("No songs found.\n")
         self.io_stream_client.flush()
 
     def __get_popular_songs_of_artist(self, artist):
@@ -99,13 +102,13 @@ class ClientHandler(threading.Thread):
 
         self.io_stream_client.write(f"{year}\n")
         if popular_songs is not None:
-            self.io_stream_client.write(";".join([f"{artist}: {song}" for artist, song in popular_songs]) + "\n")
-        #     self.io_stream_client.write("Popular songs sent successfully\n")
-        # else:
-        #     self.io_stream_client.write("Failed to get popular songs for year\n")
+            popular_songs_json = json.dumps(popular_songs)
+            self.io_stream_client.write(popular_songs_json + "\n")
+        else:
+            self.io_stream_client.write("No songs found.\n")
         self.io_stream_client.flush()
-    
-    def __get_popular_songs_of_year(self, year):
+
+    def __get_popular_songs_of_year(self, year) -> dict:
         year_data = self.data[self.data['released_year'] == year]
 
         if year_data.empty:
@@ -113,11 +116,20 @@ class ClientHandler(threading.Thread):
 
         sorted_data = year_data.sort_values(by='streams', ascending=False)
 
-        top_songs = sorted_data[['artist(s)_name', 'track_name']].head(4).values.tolist()
+        top_songs_data = sorted_data[['artist(s)_name', 'track_name']].head(4)
+        top_songs = top_songs_data.values.tolist()
 
-        print(f"Top songs of {year}: {top_songs}")
+        top_songs_dict = {}
+        for song_detail in top_songs:
+            artists_str, song_name = song_detail
+            top_songs_dict[song_name] = []
+            artists = ast.literal_eval(artists_str)
+            for artist in artists:
+                artist = artist.strip("[]'")
+                top_songs_dict[song_name].append(artist)
 
-        return top_songs
+        logging.info(top_songs_dict)
+        return top_songs_dict
 
     def __handle_playlist(self):
         song = self.io_stream_client.readline().rstrip('\n')
@@ -127,8 +139,8 @@ class ClientHandler(threading.Thread):
         if number_playlists is not None:
             self.io_stream_client.write(f"{number_playlists}\n")
         #     self.io_stream_client.write("Number of playlists sent successfully\n")
-        # else:
-        #     self.io_stream_client.write("Failed to get playlists for song\n")
+        else:
+            self.io_stream_client.write("No playlists found.\n")
         self.io_stream_client.flush()
 
     def __get_playlists_of_song(self, song):

@@ -8,6 +8,7 @@ import hashlib
 import ast
 from PIL import Image, ImageTk
 import base64
+import json
 
 class Application:
     def __init__(self, window):
@@ -73,21 +74,19 @@ class Application:
 
         logging.info("Waiting for answer from server...")
         year = self.io_stream_server.readline().rstrip('\n') 
-        popular_song_str = self.io_stream_server.readline().rstrip('\n')
+        pop_songs_str = self.io_stream_server.readline().rstrip('\n')
         
-        if popular_song_str: 
-            popular_song_list = ast.literal_eval(popular_song_str)
-        
-            self.messages["choice2"] = "YEAR"
-            self.answers["choice2"] = {"year": year, "popular_songs": popular_song_list}
-
+        if pop_songs_str:
             self.pop_songs_year_listbox.delete(0, tk.END)  # vorige opvraging verwijderen
-            for song in popular_song_list:
-                artists = ', '.join(ast.literal_eval(song[0]))
-                song_name = song[1]
-                self.pop_songs_year_listbox.insert(tk.END, f"{artists}: {song_name}")
-        
-            logging.info(f"Year: {year}, Popular Songs: {popular_song_list}")
+            try:
+                pop_songs_json = json.loads(pop_songs_str)
+                for song, artists in pop_songs_json.items():
+                    self.pop_songs_year_listbox.insert(tk.END, f"{', '.join(artists)}: {song}")
+
+            except Exception as e:
+                self.pop_songs_year_listbox.insert(tk.END, pop_songs_str)
+                logging.error(f"Error: {e}")
+
         else:
             logging.info(f"No popular songs received for the year: {year}")
 
@@ -165,12 +164,10 @@ class Application:
         self.pop_songs_artist_listbox.pack()
 
     def choice2(self):
-
         self.year_window = tk.Toplevel(window)
         self.year_window.title("popular songs (year)")
         self.year_window.geometry("400x400")
         self.year_window.configure(bg="#2d2d3d")
-
 
         self.year_label = tk.Label(self.year_window, text="Enter year:", bg="#2d2d3d", fg="white")
         self.year_label.pack()
