@@ -15,6 +15,9 @@ class Application:
         host = socket.gethostname()
         port = 9999
 
+        self.messages = {}
+        self.answers = {}
+
         logging.info("Making connection with server...")
         self.socket_to_server.connect((host, port))
 
@@ -52,6 +55,9 @@ class Application:
 
         logging.info(f"Artist: {artist_name}, Popular Songs: {popular_songs}")
 
+        self.messages["choice1"] = "ARTIST"
+        self.answers["choice1"] = {"artist_name": artist_name, "popular_songs": popular_songs}
+
         self.pop_songs_artist_listbox.delete(0, tk.END) #vorige opvraging verwijderen
         for song in popular_songs:
             self.pop_songs_artist_listbox.insert(tk.END, song)
@@ -69,6 +75,9 @@ class Application:
         if popular_song_str:  # Check if the string is not empty
             popular_song_list = ast.literal_eval(popular_song_str)
         
+            self.messages["choice2"] = "YEAR"
+            self.answers["choice2"] = {"year": year, "popular_songs": popular_song_list}
+
             self.pop_songs_year_listbox.delete(0, tk.END)  # vorige opvraging verwijderen
             for song in popular_song_list:
                 artists = ', '.join(ast.literal_eval(song[0]))  # Parse the artist list and join the names together
@@ -88,6 +97,9 @@ class Application:
         logging.info("Waiting for answer from server...")
         song = self.io_stream_server.readline().rstrip('\n') 
         number_of_playlists = self.io_stream_server.readline().rstrip('\n')
+
+        self.messages["choice3"] = "PLAYLIST"
+        self.answers["choice3"] = {"song": song, "number_of_playlists": number_of_playlists}
 
         self.pop_songs_play["text"] = number_of_playlists
 
@@ -195,20 +207,34 @@ class Application:
         self.io_stream_server.flush()
 
         logging.info("Waiting for answer from server...")
-        graph_image_bytes = self.io_stream_server.read()  # Receive graph image bytes from the server
 
-        # Convert the bytes to an image
-        img = Image.open(io.BytesIO(graph_image_bytes))
-        img = ImageTk.PhotoImage(img)
+        # Store message for choice 4
+        self.messages["choice4"] = "GRAPH"
 
-        # Display the image in the graph_window
-        self.graph_window = tk.Toplevel(window)
-        self.graph_window.title("Streams per year")
-        self.graph_window.geometry("400x400")
+        # Read the response from the server
+        graph_image_bytes = self.io_stream_server.read()
 
-        img_label = tk.Label(self.graph_window, image=img)
-        img_label.image = img  # Keep a reference to prevent garbage collection
-        img_label.pack()
+        # Process the response
+        try:
+            # Convert the bytes to an image
+            img = Image.open(io.BytesIO(graph_image_bytes))
+            img = ImageTk.PhotoImage(img)
+
+            # Store the answer for choice 4
+            self.answers["choice4"] = img
+
+            # Display the image in the graph_window
+            self.graph_window = tk.Toplevel(window)
+            self.graph_window.title("Streams per year")
+            self.graph_window.geometry("400x400")
+
+            img_label = tk.Label(self.graph_window, image=img)
+            img_label.image = img  # Keep a reference to prevent garbage collection
+            img_label.pack()
+
+        except Exception as e:
+            logging.error(f"Error displaying graph image: {e}")
+
 
     def close_connection(self):
         logging.info("Close connection with server...")

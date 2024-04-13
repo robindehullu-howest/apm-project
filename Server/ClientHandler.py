@@ -7,6 +7,7 @@ import pickle
 import pandas as pd
 import matplotlib.pyplot as plt
 import io
+import base64
 
 from Models.User import User
 
@@ -71,8 +72,11 @@ class ClientHandler(threading.Thread):
         popular_songs = self.__get_popular_songs_of_artist(artist)
 
         self.io_stream_client.write(f"{artist}\n")
-        self.io_stream_client.write(f"{';'.join(popular_songs)}\n")
-        self.io_stream_client.write("Artist and songs sent successfully\n" if popular_songs else f"Failed to get popular songs for artist {artist}\n")
+        if popular_songs is not None:
+            self.io_stream_client.write(f"{';'.join(popular_songs)}\n")
+            # self.io_stream_client.write("Artist and songs sent successfully\n")
+        # else:
+            # self.io_stream_client.write("Failed to get popular songs for artist\n")
         self.io_stream_client.flush()
 
     def __get_popular_songs_of_artist(self, artist):
@@ -81,10 +85,8 @@ class ClientHandler(threading.Thread):
         if artist_data.empty:
             return None
 
-        # Sort the filtered dataset based on the number of streams in descending order
         sorted_data = artist_data.sort_values(by='streams', ascending=False)
 
-        # Retrieve the top 4 songs from the sorted dataset
         top_songs = sorted_data['track_name'].head(4).tolist()
 
         print(f"Top songs of {artist}: {top_songs}")
@@ -96,7 +98,11 @@ class ClientHandler(threading.Thread):
         popular_songs = self.__get_popular_songs_of_year(year)
 
         self.io_stream_client.write(f"{year}\n")
-        self.io_stream_client.write(f"{popular_songs}\n")
+        if popular_songs is not None:
+            self.io_stream_client.write(";".join([f"{artist}: {song}" for artist, song in popular_songs]) + "\n")
+        #     self.io_stream_client.write("Popular songs sent successfully\n")
+        # else:
+        #     self.io_stream_client.write("Failed to get popular songs for year\n")
         self.io_stream_client.flush()
     
     def __get_popular_songs_of_year(self, year):
@@ -105,10 +111,8 @@ class ClientHandler(threading.Thread):
         if year_data.empty:
             return None
 
-        # Sort the filtered dataset based on the number of streams in descending order
         sorted_data = year_data.sort_values(by='streams', ascending=False)
 
-        # Retrieve the top 4 songs from the sorted dataset
         top_songs = sorted_data[['artist(s)_name', 'track_name']].head(4).values.tolist()
 
         print(f"Top songs of {year}: {top_songs}")
@@ -117,20 +121,22 @@ class ClientHandler(threading.Thread):
 
     def __handle_playlist(self):
         song = self.io_stream_client.readline().rstrip('\n')
-        playlists = self.__get_playlists_of_song(song)
+        number_playlists = self.__get_playlists_of_song(song)
 
         self.io_stream_client.write(f"{song}\n")
-        self.io_stream_client.write(f"{playlists}\n")
+        if number_playlists is not None:
+            self.io_stream_client.write(f"{number_playlists}\n")
+        #     self.io_stream_client.write("Number of playlists sent successfully\n")
+        # else:
+        #     self.io_stream_client.write("Failed to get playlists for song\n")
         self.io_stream_client.flush()
 
     def __get_playlists_of_song(self, song):
-        # Filter the dataset to include only rows where the track name matches the input song
         playlist_data = self.data[self.data['track_name'] == song]
 
         if playlist_data.empty:
             return None
         
-        # Count the number of playlists the song appears in
         number_playlists = playlist_data['in_spotify_playlists']
 
         print(f"Number of Spotify playlists {song} is in: {number_playlists}")
@@ -138,24 +144,26 @@ class ClientHandler(threading.Thread):
         return number_playlists
 
     def __handle_graph(self):
-        # Get the number of streams for each year
         year_streams = self.data.groupby('released_year')['streams'].sum()
 
-        # Plot the graph
         plt.figure(figsize=(8, 6))
         year_streams.plot(kind='bar')
         plt.xlabel('Year')
         plt.ylabel('Total Streams')
         plt.title('Total Streams per Year')
-        
+
         # Save the plot as a PNG image
         img_bytes = io.BytesIO()
         plt.savefig(img_bytes, format='png')
         img_bytes.seek(0)
 
-        # Send the image to the client
-        self.io_stream_client.write(img_bytes.read())
+        # Encode the image bytes to base64 string
+        img_string = base64.b64encode(img_bytes.read()).decode()
+
+        # Send the encoded image string to the client
+        self.io_stream_client.write(img_string)
         self.io_stream_client.flush()
+
 
     def __print_message_gui_server(self, message):
         self.messages_queue.put(f"CLH {self.id}:> {message}")
