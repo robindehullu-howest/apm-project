@@ -52,7 +52,7 @@ class ClientHandler(threading.Thread):
                 self.tellerGraph += 1
 
             self.__print_message_gui_server(f"Times requested: Artist: {self.tellerArtiest}, Year: {self.tellerJaar}, Playlist: {self.tellerPlaylist}, Graph: {self.tellerGraph}")
-            
+
             command = self.io_stream_client.readline().rstrip('\n')
 
         self.__print_message_gui_server("Connection with client closed...")
@@ -149,13 +149,13 @@ class ClientHandler(threading.Thread):
         song = self.io_stream_client.readline().rstrip('\n')
         number_playlists = self.__get_playlists_of_song(song)
 
-        self.io_stream_client.write(f"{song}\n")
         if number_playlists is not None:
             self.io_stream_client.write(f"{number_playlists}\n")
-        #     self.io_stream_client.write("Number of playlists sent successfully\n")
         else:
             self.io_stream_client.write("No playlists found.\n")
+        
         self.io_stream_client.flush()
+
 
     def __get_playlists_of_song(self, song):
         playlist_data = self.data[self.data['track_name'] == song]
@@ -163,11 +163,10 @@ class ClientHandler(threading.Thread):
         if playlist_data.empty:
             return None
         
-        number_playlists = playlist_data['in_spotify_playlists']
-
-        print(f"Number of Spotify playlists {song} is in: {number_playlists}")
-
+        number_playlists = playlist_data.iloc[0]['in_spotify_playlists']
+        logging.info(f"Number of Spotify playlists for '{song}': {number_playlists}")
         return number_playlists
+
 
     def __handle_graph(self):
         year_streams = self.data.groupby('released_year')['streams'].sum()

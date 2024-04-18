@@ -1,6 +1,7 @@
 import io
 import tkinter as tk
 from tkinter import ttk
+from tkinter import Spinbox
 import logging
 import socket
 import sys
@@ -63,8 +64,6 @@ class Application:
 
         logging.info(f"Artist: {artist_name}, Popular Songs: {popular_songs}")
 
-        self.messages["choice1"] = "ARTIST"
-        self.answers["choice1"] = {"artist_name": artist_name, "popular_songs": popular_songs}
         self.clear_table(self.pop_songs_artist_tree)
 
         for index, song in enumerate(popular_songs, start=1):
@@ -101,15 +100,14 @@ class Application:
         self.io_stream_server.flush()
 
         logging.info("Waiting for answer from server...")
-        song = self.io_stream_server.readline().rstrip('\n') 
-        number_of_playlists = self.io_stream_server.readline().rstrip('\n')
+        response = self.io_stream_server.readline().rstrip('\n') 
+        if response == "SUCCESS":
+            number_of_playlists = self.io_stream_server.readline().rstrip('\n')
+            self.pop_songs_play["text"] = number_of_playlists
+            logging.info(f"Number of Spotify-Playlists: {number_of_playlists}")
+        else:
+            logging.error("Error: Failed to get playlists from the server")
 
-        self.messages["choice3"] = "PLAYLIST"
-        self.answers["choice3"] = {"song": song, "number_of_playlists": number_of_playlists}
-
-        self.pop_songs_play["text"] = number_of_playlists
-
-        logging.info(f"Song: {song}, Number of Spotify-Playlists: {number_of_playlists}")
 
 
 #windows for the gui
@@ -157,6 +155,8 @@ class Application:
         self.artist_label.pack()
         self.artist_entry = tk.Entry(self.artist_window)
         self.artist_entry.pack()
+        w = Spinbox(self.artist_window, from_=0, to=50)
+        w.pack()
 
         self.songs_button = tk.Button(self.artist_window, text="Get popular songs for artist", command=self.send_choice1, bg="#7474ab", fg="white")
         self.songs_button.pack()
@@ -179,6 +179,8 @@ class Application:
         self.year_label.pack()
         self.year_entry = tk.Entry(self.year_window)
         self.year_entry.pack()
+        w = Spinbox(self.year_window, from_=0, to=50)
+        w.pack()
 
         self.songs_button = tk.Button(self.year_window, text="Get popular songs", command=self.send_choice2, bg="#7474ab", fg="white")
         self.songs_button.pack()
