@@ -22,9 +22,13 @@ class ClientHandler(threading.Thread):
         self.socket_to_client = socketclient
         self.io_stream_client = self.socket_to_client.makefile(mode='rw')
         self.messages_queue = messages_queue
-        self.data = pd.read_csv("./Data/spotify_data.csv")
+        self.data = pd.read_csv("../Data/spotify_data.csv")
         self.id = ClientHandler.clienthandler_count
         ClientHandler.clienthandler_count += 1
+        self.tellerArtiest = 0
+        self.tellerJaar = 0
+        self.tellerPlaylist = 0
+        self.tellerGraph = 0
 
     def run(self):
         self.__print_message_gui_server("Started & waiting...")
@@ -36,16 +40,26 @@ class ClientHandler(threading.Thread):
                 self.__handle_login()
             elif command == "ARTIST":
                 self.__handle_artist()
+                self.tellerArtiest += 1
             elif command == "YEAR":
                 self.__handle_year()
+                self.tellerJaar += 1
             elif command == "PLAYLIST":
                 self.__handle_playlist()
+                self.tellerPlaylist += 1
             elif command == "GRAPH":
                 self.__handle_graph()
+                self.tellerGraph += 1
 
+            self.__print_message_gui_server(f"Times requested: Artist: {self.tellerArtiest}, Year: {self.tellerJaar}, Playlist: {self.tellerPlaylist}, Graph: {self.tellerGraph}")
+            
             command = self.io_stream_client.readline().rstrip('\n')
 
         self.__print_message_gui_server("Connection with client closed...")
+        self.tellerArtiest = 0
+        self.tellerJaar = 0
+        self.tellerPlaylist = 0
+        self.tellerGraph = 0
         self.io_stream_client.close()
         self.socket_to_client.close()
 
@@ -60,7 +74,7 @@ class ClientHandler(threading.Thread):
         self.__print_message_gui_server(message)
     
     def __check_credentials(self, input_user: User):
-        my_reader_obj = open("./Data/users.txt", mode='rb')
+        my_reader_obj = open("../Data/users.txt", mode='rb')
         while True:
             try:
                 stored_user = pickle.load(my_reader_obj)
