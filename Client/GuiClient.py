@@ -29,6 +29,10 @@ class Application:
 
         self.create_login_screen()
 
+    def clear_table(self, treeview):
+        for item in treeview.get_children():
+            treeview.delete(item)
+
 #functions for the gui
 
     def send_login_info(self):
@@ -61,10 +65,10 @@ class Application:
 
         self.messages["choice1"] = "ARTIST"
         self.answers["choice1"] = {"artist_name": artist_name, "popular_songs": popular_songs}
+        self.clear_table(self.pop_songs_artist_tree)
 
-        self.pop_songs_artist_listbox.delete(0, tk.END) #vorige opvraging verwijderen
-        for song in popular_songs:
-            self.pop_songs_artist_listbox.insert(tk.END, song)
+        for index, song in enumerate(popular_songs, start=1):
+            self.pop_songs_artist_tree.insert('', 'end',text=index, values=[song])
 
     def send_choice2(self):
         year = self.year_entry.get()
@@ -77,14 +81,14 @@ class Application:
         pop_songs_str = self.io_stream_server.readline().rstrip('\n')
         
         if pop_songs_str:
-            self.pop_songs_year_listbox.delete(0, tk.END)  # vorige opvraging verwijderen
+            self.clear_table(self.pop_songs_year_tree)  # vorige opvraging verwijderen
             try:
                 pop_songs_json = json.loads(pop_songs_str)
-                for song, artists in pop_songs_json.items():
-                    self.pop_songs_year_listbox.insert(tk.END, f"{', '.join(artists)}: {song}")
+                for index, (song, artists) in enumerate(pop_songs_json.items(), start=1):
+                    self.pop_songs_year_tree.insert('', 'end', text=index, values=[song, artists])
 
             except Exception as e:
-                self.pop_songs_year_listbox.insert(tk.END, pop_songs_str)
+                self.pop_songs_year_tree.insert('', 'end', values=[pop_songs_str])  # Insert error message directly into treeview
                 logging.error(f"Error: {e}")
 
         else:
@@ -160,8 +164,10 @@ class Application:
         pop_songs_artist_label = tk.Label(self.artist_window, text="Popular Songs:", bg="#2d2d3d", fg="white")
         pop_songs_artist_label.pack()
 
-        self.pop_songs_artist_listbox = tk.Listbox(self.artist_window)
-        self.pop_songs_artist_listbox.pack()
+        self.pop_songs_artist_tree = ttk.Treeview(self.artist_window, columns=('Number','Popular Songs'))
+        self.pop_songs_artist_tree.heading('#0', text='Number')
+        self.pop_songs_artist_tree.heading('#1', text='Popular Songs')
+        self.pop_songs_artist_tree.pack()
 
     def choice2(self):
         self.year_window = tk.Toplevel(window)
@@ -180,8 +186,11 @@ class Application:
         pop_songs_year_label = tk.Label(self.year_window, text="Popular Songs:", bg="#2d2d3d", fg="white")
         pop_songs_year_label.pack()
 
-        self.pop_songs_year_listbox = tk.Listbox(self.year_window)
-        self.pop_songs_year_listbox.pack()
+        self.pop_songs_year_tree = ttk.Treeview(self.year_window, columns=('Number','Popular Songs','Artist(s)'))
+        self.pop_songs_year_tree.heading('#0', text='Number')
+        self.pop_songs_year_tree.heading('#1', text='Popular Songs')
+        self.pop_songs_year_tree.heading('#2', text='Artist(s)')
+        self.pop_songs_year_tree.pack()
 
     def choice3(self):
         self.play_window = tk.Toplevel(window)
