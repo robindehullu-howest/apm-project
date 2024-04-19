@@ -100,13 +100,14 @@ class Application:
         self.io_stream_server.flush()
 
         logging.info("Waiting for answer from server...")
-        response = self.io_stream_server.readline().rstrip('\n') 
-        if response == "SUCCESS":
-            number_of_playlists = self.io_stream_server.readline().rstrip('\n')
+        number_of_playlists = self.io_stream_server.readline().rstrip('\n')
+        if number_of_playlists == "No playlists found.":
+            self.pop_songs_play["text"] = number_of_playlists
+            logging.info("No playlists found.")
+        else:
             self.pop_songs_play["text"] = number_of_playlists
             logging.info(f"Number of Spotify-Playlists: {number_of_playlists}")
-        else:
-            logging.error("Error: Failed to get playlists from the server")
+
 
 
 
