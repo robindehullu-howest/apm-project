@@ -37,6 +37,12 @@ class Server(threading.Thread):
     def close_server_socket(self):
         if self.serversocket is not None:
             self.serversocket.close()
+            self.clear_logged_users()
+    
+    def clear_logged_users(self):
+        # Clear the logged users file
+        with open("../Data/loggedusers.txt", "w") as file:
+            file.write("")
 
     def run(self):
         try:

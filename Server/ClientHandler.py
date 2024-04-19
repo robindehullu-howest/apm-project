@@ -72,6 +72,13 @@ class ClientHandler(threading.Thread):
         self.io_stream_client.write(message)
         self.io_stream_client.flush()
         self.__print_message_gui_server(message)
+
+        if is_valid:
+            self.__store_logged_user(username, password)
+
+    def __store_logged_user(self, username, password):
+        with open("../Data/loggedusers.txt", "a") as file:
+            file.write(f"{username}:{password}\n")
     
     def __check_credentials(self, input_user: User):
         my_reader_obj = open("../Data/users.txt", mode='rb')
