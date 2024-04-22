@@ -38,6 +38,8 @@ class ClientHandler(threading.Thread):
 
             if command == "LOGIN":
                 self.__handle_login()
+            elif command == "REGISTER":
+                self.__handle_register()
             elif command == "ARTIST":
                 self.__handle_artist()
                 self.tellerArtiest += 1
@@ -75,6 +77,9 @@ class ClientHandler(threading.Thread):
 
         if is_valid:
             self.__store_logged_user(username, password)
+
+    def __handle_register(self):
+        pass
 
     def __store_logged_user(self, username, password):
         with open("../Data/loggedusers.txt", "a") as file:
