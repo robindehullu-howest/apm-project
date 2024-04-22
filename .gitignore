@@ -161,3 +161,4 @@ cython_debug/
 
 # users login data
 users.txt
+loggedusers.txt

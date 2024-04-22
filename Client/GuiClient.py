@@ -114,17 +114,17 @@ class Application:
 #windows for the gui
 
     def create_login_screen(self):
-        self.username_label = tk.Label(self.window, text="Username:", bg="#2d2d3d", fg="white")
+        self.username_label = tk.Label(self.window, text="Username:", bg="#191414", fg="white")
         self.username_label.pack()
         self.username_entry = tk.Entry(self.window)
         self.username_entry.pack()
 
-        self.password_label = tk.Label(self.window, text="Password:", bg="#2d2d3d", fg="white")
+        self.password_label = tk.Label(self.window, text="Password:", bg="#191414", fg="white")
         self.password_label.pack()
         self.password_entry = tk.Entry(self.window, show="*")
         self.password_entry.pack()
 
-        self.login_button = tk.Button(self.window, text="Login", command=self.send_login_info, bg="#7474ab", fg="white")
+        self.login_button = tk.Button(self.window, text="Login", command=self.send_login_info, bg="#1DB954", fg="white")
         self.login_button.pack()
 
     def create_main_menu(self):
@@ -134,35 +134,35 @@ class Application:
         self.password_entry.pack_forget()
         self.login_button.pack_forget()
 
-        self.choice1_button = tk.Button(self.window, text="Get popular songs of artist", command=self.choice1, bg="#7474ab", fg="white")
+        self.choice1_button = tk.Button(self.window, text="Get popular songs of artist", command=self.choice1, bg="#1DB954", fg="white")
         self.choice1_button.pack()
 
-        self.choice2_button = tk.Button(self.window, text="Most popular songs per year", command=self.choice2, bg="#7474ab", fg="white")
+        self.choice2_button = tk.Button(self.window, text="Most popular songs per year", command=self.choice2, bg="#1DB954", fg="white")
         self.choice2_button.pack()
 
-        self.choice3_button = tk.Button(self.window, text="Number of Spotify-playlists where song is found", command=self.choice3, bg="#7474ab", fg="white")
+        self.choice3_button = tk.Button(self.window, text="Number of Spotify-playlists where song is found", command=self.choice3, bg="#1DB954", fg="white")
         self.choice3_button.pack()
 
-        self.choice4_button = tk.Button(self.window, text="Graph of total streams per year", command=self.choice4, bg="#7474ab", fg="white")
+        self.choice4_button = tk.Button(self.window, text="Graph of total streams per year", command=self.choice4, bg="#1DB954", fg="white")
         self.choice4_button.pack()
 
     def choice1(self):
         self.artist_window = tk.Toplevel(window)
         self.artist_window.title("Artist")
         self.artist_window.geometry("400x400")
-        self.artist_window.configure(bg="#2d2d3d")
+        self.artist_window.configure(bg="#191414")
 
-        self.artist_label = tk.Label(self.artist_window, text="Artist:", bg="#2d2d3d", fg="white")
+        self.artist_label = tk.Label(self.artist_window, text="Artist:", bg="#191414", fg="white")
         self.artist_label.pack()
         self.artist_entry = tk.Entry(self.artist_window)
         self.artist_entry.pack()
         w = Spinbox(self.artist_window, from_=0, to=50)
         w.pack()
 
-        self.songs_button = tk.Button(self.artist_window, text="Get popular songs for artist", command=self.send_choice1, bg="#7474ab", fg="white")
+        self.songs_button = tk.Button(self.artist_window, text="Get popular songs for artist", command=self.send_choice1, bg="#1DB954", fg="white")
         self.songs_button.pack()
 
-        pop_songs_artist_label = tk.Label(self.artist_window, text="Popular Songs:", bg="#2d2d3d", fg="white")
+        pop_songs_artist_label = tk.Label(self.artist_window, text="Popular Songs:", bg="#191414", fg="white")
         pop_songs_artist_label.pack()
 
         self.pop_songs_artist_tree = ttk.Treeview(self.artist_window, columns=('Number','Popular Songs'))
@@ -174,19 +174,19 @@ class Application:
         self.year_window = tk.Toplevel(window)
         self.year_window.title("popular songs (year)")
         self.year_window.geometry("400x400")
-        self.year_window.configure(bg="#2d2d3d")
+        self.year_window.configure(bg="#191414")
 
-        self.year_label = tk.Label(self.year_window, text="Enter year:", bg="#2d2d3d", fg="white")
+        self.year_label = tk.Label(self.year_window, text="Enter year:", bg="#191414", fg="white")
         self.year_label.pack()
         self.year_entry = tk.Entry(self.year_window)
         self.year_entry.pack()
         w = Spinbox(self.year_window, from_=0, to=50)
         w.pack()
 
-        self.songs_button = tk.Button(self.year_window, text="Get popular songs", command=self.send_choice2, bg="#7474ab", fg="white")
+        self.songs_button = tk.Button(self.year_window, text="Get popular songs", command=self.send_choice2, bg="#1DB954", fg="white")
         self.songs_button.pack()
 
-        pop_songs_year_label = tk.Label(self.year_window, text="Popular Songs:", bg="#2d2d3d", fg="white")
+        pop_songs_year_label = tk.Label(self.year_window, text="Popular Songs:", bg="#191414", fg="white")
         pop_songs_year_label.pack()
 
         self.pop_songs_year_tree = ttk.Treeview(self.year_window, columns=('Number','Popular Songs','Artist(s)'))
@@ -199,18 +199,18 @@ class Application:
         self.play_window = tk.Toplevel(window)
         self.play_window.title("Spotify-playlists where song is found")
         self.play_window.geometry("400x400")
-        self.play_window.configure(bg="#2d2d3d")
+        self.play_window.configure(bg="#191414")
 
 
-        self.play_label = tk.Label(self.play_window, text="Enter song:", bg="#2d2d3d", fg="white")
+        self.play_label = tk.Label(self.play_window, text="Enter song:", bg="#191414", fg="white")
         self.play_label.pack()
         self.play_entry = tk.Entry(self.play_window)
         self.play_entry.pack()
 
-        self.songs_button = tk.Button(self.play_window, text="Get Spotify-playlists", command=self.send_choice3, bg="#7474ab", fg="white")
+        self.songs_button = tk.Button(self.play_window, text="Get Spotify-playlists", command=self.send_choice3, bg="#1DB954", fg="white")
         self.songs_button.pack()
 
-        pop_songs_play_label = tk.Label(self.play_window, text="Number of Spotify-Playlists:", bg="#2d2d3d", fg="white")
+        pop_songs_play_label = tk.Label(self.play_window, text="Number of Spotify-Playlists:", bg="#191414", fg="white")
         pop_songs_play_label.pack()
 
         self.pop_songs_play = tk.Label(self.play_window)
@@ -235,7 +235,7 @@ class Application:
         self.graph_window = tk.Toplevel(window)
         self.graph_window.title("Streams per year")
         self.graph_window.geometry("900x700")
-        self.graph_window.configure(bg="#2d2d3d")
+        self.graph_window.configure(bg="#191414")
 
 
         img_label = tk.Label(self.graph_window, image=img)
@@ -256,7 +256,7 @@ logging.basicConfig(level=logging.INFO)
 window = tk.Tk()
 window.title("GUI Client")
 
-window.configure(bg="#2d2d3d") 
+window.configure(bg="#191414") 
 
 app = Application(window)
 
