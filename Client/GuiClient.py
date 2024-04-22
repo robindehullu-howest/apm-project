@@ -129,21 +129,30 @@ class Application:
 #windows for the gui
 
     def create_login_screen(self):
-        self.username_label = tk.Label(self.window, text="Username:", bg="#191414", fg="white")
-        self.username_label.pack()
-        self.username_entry = tk.Entry(self.window)
-        self.username_entry.pack()
+        frame = tk.Frame(self.window)
+        frame.grid(pady=10)
+        frame.configure(bg="#191414")
 
-        self.password_label = tk.Label(self.window, text="Password:", bg="#191414", fg="white")
-        self.password_label.pack()
-        self.password_entry = tk.Entry(self.window, show="*")
-        self.password_entry.pack()
+        self.window.grid_rowconfigure(0, weight=1)
+        self.window.grid_columnconfigure(0, weight=1)
+        frame.grid_rowconfigure(0, weight=1)
+        frame.grid_columnconfigure(0, weight=1)
 
-        self.login_button = tk.Button(self.window, text="Login", command=self.send_login_info, bg="#1DB954", fg="white")
-        self.login_button.pack()
+        self.username_label = tk.Label(frame, text="Username:", bg="#191414", fg="white")
+        self.username_label.grid(row=0, column=0, pady=(5, 2), sticky="w")
+        self.username_entry = tk.Entry(frame)
+        self.username_entry.grid(row=1, column=0, pady=(0, 5), padx=5, sticky="ew")
 
-        self.register_window_button = tk.Button(self.window, text="Register", command=self.create_register_screen, bg="#1DB954", fg="white")
-        self.register_window_button.pack()
+        self.password_label = tk.Label(frame, text="Password:", bg="#191414", fg="white")
+        self.password_label.grid(row=2, column=0, pady=(5, 2), sticky="w")
+        self.password_entry = tk.Entry(frame, show="*")
+        self.password_entry.grid(row=3, column=0, pady=(0, 5), padx=5, sticky="ew")
+
+        self.login_button = tk.Button(frame, text="Login", command=self.send_login_info, bg="#1DB954", fg="white")
+        self.login_button.grid(row=4, column=0, pady=5)
+
+        self.register_window_button = tk.Button(frame, text="Register", command=self.create_register_screen, bg="#1DB954", fg="white")
+        self.register_window_button.grid(row=5, column=0, pady=5)
 
     def create_register_screen(self):
         self.register_window = tk.Toplevel(window)
@@ -176,27 +185,26 @@ class Application:
         self.login_button.pack_forget()
         self.register_window_button.pack_forget()
 
-        script_dir = os.path.dirname(__file__)  # Get the directory of the current script
+        script_dir = os.path.dirname(__file__)
         image_path = os.path.join(script_dir, "Images", "spotify-logo.png")
         self.img = Image.open(image_path)
-        # self.img = self.img.resize((200, 200))  # Resize the image if necessary
+        # self.img = self.img.resize((200, 200))
         self.img = ImageTk.PhotoImage(self.img)
 
-        # Create a label to display the image
         self.img_label = tk.Label(self.window, image=self.img, bg="#191414")
-        self.img_label.pack()
+        self.img_label.grid(row=0, column=0, columnspan=2, pady=5)  # over 2 kolommen
 
         self.choice1_button = tk.Button(self.window, text="Get popular songs of artist", command=self.choice1, bg="#1DB954", fg="white")
-        self.choice1_button.pack()
+        self.choice1_button.grid(row=1, column=0, padx=10, pady=5)
 
         self.choice2_button = tk.Button(self.window, text="Most popular songs per year", command=self.choice2, bg="#1DB954", fg="white")
-        self.choice2_button.pack()
+        self.choice2_button.grid(row=1, column=1, padx=10, pady=5)
 
         self.choice3_button = tk.Button(self.window, text="Number of Spotify-playlists where song is found", command=self.choice3, bg="#1DB954", fg="white")
-        self.choice3_button.pack()
+        self.choice3_button.grid(row=2, column=0, padx=10, pady=5)
 
         self.choice4_button = tk.Button(self.window, text="Graph of total streams per year", command=self.choice4, bg="#1DB954", fg="white")
-        self.choice4_button.pack()
+        self.choice4_button.grid(row=2, column=1, padx=10, pady=5)
 
     def choice1(self):
         self.artist_window = tk.Toplevel(window)
