@@ -53,21 +53,18 @@ class Application:
             self.create_main_menu()
 
     def send_register_info(self):
-        username = self.username_entry.get()
-        email = self.mail_entry.get()
-        password = self.password_entry.get()
+        username = self.register_username_entry.get()
+        # email = self.mail_entry.get()
+        password = self.register_password_entry.get()
         self.io_stream_server.write("REGISTER\n")
         self.io_stream_server.write(f"{username}\n")
-        self.io_stream_server.write(f"{email}\n")
+        # self.io_stream_server.write(f"{email}\n")
         self.io_stream_server.write(f"{password}\n")
         self.io_stream_server.flush()
 
         logging.info("Waiting for answer from server...")
         message = self.io_stream_server.readline().rstrip('\n')
         logging.info(f"Message from server: {message}")
-
-        if message == "Registration successful":
-            self.create_main_menu()
 
     def send_choice1(self):
         artist = self.artist_entry.get()
@@ -145,28 +142,28 @@ class Application:
         self.login_button = tk.Button(self.window, text="Login", command=self.send_login_info, bg="#1DB954", fg="white")
         self.login_button.pack()
 
-        self.register_button = tk.Button(self.window, text="Register", command=self.create_register_screen, bg="#1DB954", fg="white")
-        self.register_button.pack()
+        self.register_window_button = tk.Button(self.window, text="Register", command=self.create_register_screen, bg="#1DB954", fg="white")
+        self.register_window_button.pack()
 
     def create_register_screen(self):
         self.register_window = tk.Toplevel(window)
         self.register_window.title("Register user")
         self.register_window.geometry("400x400")
         self.register_window.configure(bg="#191414")
-        self.username_label = tk.Label(self.register_window, text="Username:", bg="#191414", fg="white")
-        self.username_label.pack()
-        self.username_entry = tk.Entry(self.register_window)
-        self.username_entry.pack()
+        self.register_username_label = tk.Label(self.register_window, text="Username:", bg="#191414", fg="white")
+        self.register_username_label.pack()
+        self.register_username_entry = tk.Entry(self.register_window)
+        self.register_username_entry.pack()
 
-        self.mail_label = tk.Label(self.register_window, text="Email:", bg="#191414", fg="white")
-        self.mail_label.pack()
-        self.mail_entry = tk.Entry(self.register_window)
-        self.mail_entry.pack()
+        # self.mail_label = tk.Label(self.register_window, text="Email:", bg="#191414", fg="white")
+        # self.mail_label.pack()
+        # self.mail_entry = tk.Entry(self.register_window)
+        # self.mail_entry.pack()
 
-        self.password_label = tk.Label(self.register_window, text="Password:", bg="#191414", fg="white")
-        self.password_label.pack()
-        self.password_entry = tk.Entry(self.register_window, show="*")
-        self.password_entry.pack()
+        self.register_password_label = tk.Label(self.register_window, text="Password:", bg="#191414", fg="white")
+        self.register_password_label.pack()
+        self.register_password_entry = tk.Entry(self.register_window, show="*")
+        self.register_password_entry.pack()
 
         self.register_button = tk.Button(self.register_window, text="Register", command=self.send_register_info, bg="#1DB954", fg="white")
         self.register_button.pack()
@@ -177,6 +174,7 @@ class Application:
         self.password_label.pack_forget()
         self.password_entry.pack_forget()
         self.login_button.pack_forget()
+        self.register_window_button.pack_forget()
 
         script_dir = os.path.dirname(__file__)  # Get the directory of the current script
         image_path = os.path.join(script_dir, "Images", "spotify-logo.png")
