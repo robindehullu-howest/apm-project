@@ -1,4 +1,5 @@
 import io
+import os
 import tkinter as tk
 from tkinter import ttk
 from tkinter import Spinbox
@@ -133,6 +134,16 @@ class Application:
         self.password_label.pack_forget()
         self.password_entry.pack_forget()
         self.login_button.pack_forget()
+
+        script_dir = os.path.dirname(__file__)  # Get the directory of the current script
+        image_path = os.path.join(script_dir, "Images", "spotify-logo.png")
+        self.img = Image.open(image_path)
+        # self.img = self.img.resize((200, 200))  # Resize the image if necessary
+        self.img = ImageTk.PhotoImage(self.img)
+
+        # Create a label to display the image
+        self.img_label = tk.Label(self.window, image=self.img, bg="#191414")
+        self.img_label.pack()
 
         self.choice1_button = tk.Button(self.window, text="Get popular songs of artist", command=self.choice1, bg="#1DB954", fg="white")
         self.choice1_button.pack()
