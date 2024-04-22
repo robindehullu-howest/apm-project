@@ -188,23 +188,26 @@ class Application:
         script_dir = os.path.dirname(__file__)
         image_path = os.path.join(script_dir, "Images", "spotify-logo.png")
         self.img = Image.open(image_path)
-        # self.img = self.img.resize((200, 200))
         self.img = ImageTk.PhotoImage(self.img)
 
         self.img_label = tk.Label(self.window, image=self.img, bg="#191414")
         self.img_label.grid(row=0, column=0, columnspan=2, pady=5)  # over 2 kolommen
 
         self.choice1_button = tk.Button(self.window, text="Get popular songs of artist", command=self.choice1, bg="#1DB954", fg="white")
-        self.choice1_button.grid(row=1, column=0, padx=10, pady=5)
+        self.choice1_button.grid(row=1, column=0, padx=10, pady=5, sticky="ew")
 
         self.choice2_button = tk.Button(self.window, text="Most popular songs per year", command=self.choice2, bg="#1DB954", fg="white")
-        self.choice2_button.grid(row=1, column=1, padx=10, pady=5)
+        self.choice2_button.grid(row=1, column=1, padx=10, pady=5, sticky="ew")
 
         self.choice3_button = tk.Button(self.window, text="Number of Spotify-playlists where song is found", command=self.choice3, bg="#1DB954", fg="white")
-        self.choice3_button.grid(row=2, column=0, padx=10, pady=5)
+        self.choice3_button.grid(row=2, column=0, padx=10, pady=5, sticky="ew")
 
         self.choice4_button = tk.Button(self.window, text="Graph of total streams per year", command=self.choice4, bg="#1DB954", fg="white")
-        self.choice4_button.grid(row=2, column=1, padx=10, pady=5)
+        self.choice4_button.grid(row=2, column=1, padx=10, pady=5, sticky="ew")
+
+        # Configure column weights to center the widgets
+        self.window.grid_columnconfigure(0, weight=1)
+        self.window.grid_columnconfigure(1, weight=1)
 
     def choice1(self):
         self.artist_window = tk.Toplevel(window)
