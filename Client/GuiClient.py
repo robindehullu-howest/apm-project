@@ -67,12 +67,16 @@ class Application:
 
     def send_register_info(self):
         username = self.register_username_entry.get()
-        # email = self.mail_entry.get()
+        # nickname = self.register_nickname_entry.get()
+        # email = self.register_email_entry.get()
         password = self.register_password_entry.get()
+
         self.io_stream_server.write("REGISTER\n")
         self.io_stream_server.write(f"{username}\n")
         # self.io_stream_server.write(f"{email}\n")
         self.io_stream_server.write(f"{password}\n")
+        # self.io_stream_server.write(f"{nickname}\n")
+        # self.io_stream_server.write(f"{email}\n")
         self.io_stream_server.flush()
 
         logging.info("Waiting for answer from server...")
@@ -177,10 +181,15 @@ class Application:
         self.register_username_entry = tk.Entry(self.register_window)
         self.register_username_entry.pack()
 
-        # self.mail_label = tk.Label(self.register_window, text="Email:", bg="#191414", fg="white")
-        # self.mail_label.pack()
-        # self.mail_entry = tk.Entry(self.register_window)
-        # self.mail_entry.pack()
+        # self.register_nickname_label = tk.Label(self.register_window, text="Nickname:", bg="#191414", fg="white")
+        # self.register_nickname_label.pack()
+        # self.register_nickname_entry = tk.Entry(self.register_window)
+        # self.register_nickname_entry.pack()
+
+        # self.register_email_label = tk.Label(self.register_window, text="Email:", bg="#191414", fg="white")
+        # self.register_email_label.pack()
+        # self.register_email_entry = tk.Entry(self.register_window)
+        # self.register_email_entry.pack()
 
         self.register_password_label = tk.Label(self.register_window, text="Password:", bg="#191414", fg="white")
         self.register_password_label.pack()

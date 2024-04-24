@@ -1,14 +1,24 @@
 class User:
     __usercount = 0
 
-    def __init__(self, username: str, password: str):
+    def __init__(self, username: str,password: str):
         self.__username = username
         self.__password = password
+        # self.__nickname = nickname
+        # self.__email = email
         User.__usercount += 1
 
     @property
     def username(self):
         return self.__username
+
+    # @property
+    # def nickname(self):
+    #     return self.__nickname
+    
+    # @property
+    # def email(self):
+    #     return self.__email
 
     @property
     def password(self):

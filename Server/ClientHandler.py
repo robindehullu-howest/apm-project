@@ -88,7 +88,10 @@ class ClientHandler(threading.Thread):
 
     def __handle_register(self):
         username = self.io_stream_client.readline().rstrip('\n')
+        # nickname = self.io_stream_client.readline().rstrip('\n')
+        # email = self.io_stream_client.readline().rstrip('\n')
         password = self.io_stream_client.readline().rstrip('\n')
+
         self.register_user(username, password)
         message = "Registration successful\n"
         self.io_stream_client.write(message)
@@ -97,7 +100,7 @@ class ClientHandler(threading.Thread):
 
     def __store_logged_user(self, username, password):
         with open("../Data/loggedusers.txt", "a") as file:
-            file.write(f"{username}:{password}\n")
+            file.write(f"Username: {username}, Password:{password}\n")
     
     def __check_credentials(self, input_user: User):
         with open("../Data/users.txt", mode='rb') as my_reader_obj:
