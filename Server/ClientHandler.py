@@ -197,12 +197,17 @@ class ClientHandler(threading.Thread):
 
     def __handle_graph(self):
         year_streams = self.data.groupby('released_year')['streams'].sum()
+        plt.style.use('dark_background')
 
-        plt.figure(figsize=(8, 6))
-        year_streams.plot(kind='bar')
-        plt.xlabel('Year')
-        plt.ylabel('Total Streams')
-        plt.title('Total Streams per Year')
+        plt.figure(figsize=(8, 6), facecolor='#191414')
+        year_streams.plot(kind='bar',color='#1DB954')
+
+        plt.xlabel('Year',color='#1DB954')
+        plt.ylabel('Total Streams',color='#1DB954')
+        plt.title('Total Streams per Year',color='#1DB954')
+
+        plt.xticks(color='white')
+        plt.yticks(color='white')
 
         img_bytes = io.BytesIO()
         plt.savefig(img_bytes, format='png')

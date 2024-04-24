@@ -184,6 +184,8 @@ class Application:
         self.password_entry.pack_forget()
         self.login_button.pack_forget()
         self.register_window_button.pack_forget()
+        # self.window.destroy()
+        self.window.geometry("1000x600")
 
         script_dir = os.path.dirname(__file__)
         image_path = os.path.join(script_dir, "Images", "spotify-logo.png")
@@ -221,8 +223,8 @@ class Application:
         self.artist_label.pack()
         self.artist_entry = tk.Entry(self.artist_window)
         self.artist_entry.pack()
-        w = Spinbox(self.artist_window, from_=0, to=50)
-        w.pack()
+        # w = Spinbox(self.artist_window, from_=0, to=50)
+        # w.pack()
 
         self.songs_button = tk.Button(self.artist_window, text="Get popular songs for artist", command=self.send_choice1, bg="#1DB954", fg="white")
         self.songs_button.pack()
@@ -245,8 +247,8 @@ class Application:
         self.year_label.pack()
         self.year_entry = tk.Entry(self.year_window)
         self.year_entry.pack()
-        w = Spinbox(self.year_window, from_=0, to=50)
-        w.pack()
+        # w = Spinbox(self.year_window, from_=0, to=50)
+        # w.pack()
 
         self.songs_button = tk.Button(self.year_window, text="Get popular songs", command=self.send_choice2, bg="#1DB954", fg="white")
         self.songs_button.pack()
