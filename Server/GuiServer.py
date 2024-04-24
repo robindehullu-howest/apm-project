@@ -6,6 +6,7 @@ import logging
 import socket
 from queue import Queue
 from threading import Thread
+import tkinter as tk
 from tkinter import *
 
 from Server import Server
@@ -22,29 +23,70 @@ class ServerWindow(Frame):
 
     # Creation of init_window
     def init_window(self):
-        # changing the title of our master widget
+        frame = tk.Frame(self.master)
+        frame.grid(pady=10)
+        frame.configure(bg="#191414")
         self.master.title("Server")
-
-        # allowing the widget to take the full space of the root window
-        self.pack(fill=BOTH, expand=1)
-
+        self.master.geometry("400x400")
         self.master.configure(bg="#191414")
 
-        Label(self, text="Log-berichten server:").grid(row=0)
-        self.scrollbar = Scrollbar(self, orient=VERTICAL)
-        self.lstnumbers = Listbox(self, yscrollcommand=self.scrollbar.set, bg="#191414", fg="white")
-        self.scrollbar.config(command=self.lstnumbers.yview)
+        self.master.start_button = tk.Button(frame, text="Start server", command=self.Start_Window, bg="#1DB954", fg="white")
+        self.master.start_button.grid(row=0, column=0, pady=(5, 5), padx=(5, 5), sticky=N + S + E + W)
 
-        self.lstnumbers.grid(row=1, column=0, sticky=N + S + E + W)
-        self.scrollbar.grid(row=1, column=1, sticky=N + S)
+        self.master.users_button = tk.Button(frame, text="Get logged in users", command=self.ingelogde_users, bg="#1DB954", fg="white")
+        self.master.users_button.grid(row=1, column=0, pady=(5, 5), padx=(5, 5), sticky=N + S + E + W)
 
-        self.btn_text = StringVar()
-        self.btn_text.set("Start server")
-        self.buttonServer = Button(self, textvariable=self.btn_text, command=self.start_stop_server, bg="#1DB954", fg="white")
-        self.buttonServer.grid(row=3, column=0, columnspan=2, pady=(5, 5), padx=(5, 5), sticky=N + S + E + W)
+        # self.master.popularity_button = tk.Button(frame, text="View searches", command=self.view_searches, bg="#1DB954", fg="white")
+        # self.master.popularity_button.grid(row=2, column=0, pady=(5, 5), padx=(5, 5), sticky=N + S + E + W)
 
-        Grid.rowconfigure(self, 1, weight=1)
-        Grid.columnconfigure(self, 0, weight=1)
+
+    def Start_Window(self):
+        self.start_window = tk.Toplevel(self.master)
+        self.start_window.title("Register user")
+        self.start_window.geometry("400x400")
+        self.start_window.configure(bg="#191414")
+
+        self.start_window.configure(bg="#191414")
+
+        Label(self.start_window, text="Log-berichten server:").grid(row=0)
+        self.start_window.scrollbar = Scrollbar(self.start_window, orient=VERTICAL)
+        self.start_window.lstnumbers = Listbox(self.start_window, yscrollcommand=self.start_window.scrollbar.set, bg="#191414", fg="white")
+        self.start_window.scrollbar.config(command=self.start_window.lstnumbers.yview)
+
+        self.start_window.lstnumbers.grid(row=1, column=0, sticky=N + S + E + W)
+        self.start_window.scrollbar.grid(row=1, column=1, sticky=N + S)
+
+        self.start_window.btn_text = StringVar()
+        self.start_window.btn_text.set("Start server")
+        self.start_window.buttonServer = Button(self.start_window, textvariable=self.start_window.btn_text, command=self.start_stop_server, bg="#1DB954", fg="white")
+        self.start_window.buttonServer.grid(row=3, column=0, columnspan=2, pady=(5, 5), padx=(5, 5), sticky=N + S + E + W)
+
+        Grid.rowconfigure(self.start_window, 1, weight=1)
+        Grid.columnconfigure(self.start_window, 0, weight=1)
+
+    def ingelogde_users(self):
+        users_window = tk.Toplevel(self.master)
+        users_window.title("Logged-in Users")
+        users_window.geometry("300x200")
+        users_window.configure(bg="#191414")
+
+        logged_users_label = Label(users_window, text="Logged-in Users", bg="#191414", fg="white")
+        logged_users_label.pack()
+
+        users_listbox = Listbox(users_window, bg="#191414", fg="white")
+        users_listbox.pack(fill="both", expand=True)
+
+        try:
+            with open("../Data/loggedusers.txt", "r") as file:
+                logged_users = file.readlines()
+                for user in logged_users:
+                    users_listbox.insert(END, user.strip())
+        except FileNotFoundError:
+            users_listbox.insert(END, "No logged-in users")
+
+        close_button = Button(users_window, text="Close", command=users_window.destroy, bg="#1DB954", fg="white")
+        close_button.pack(pady=10)
+
 
     def init_server(self):
         # server - init
@@ -57,11 +99,11 @@ class ServerWindow(Frame):
     def start_stop_server(self):
         if self.server.is_connected == True:
             self.server.close_server_socket()
-            self.btn_text.set("Start server")
+            self.start_window.btn_text.set("Start server")
         else:
             self.server.init_server()
             self.server.start()             #thread!
-            self.btn_text.set("Stop server")
+            self.start_window.btn_text.set("Stop server")
 
 
     def afsluiten_server(self):
@@ -79,6 +121,6 @@ class ServerWindow(Frame):
     def print_messsages_from_queue(self):
         message = self.messages_queue.get()
         while not "CLOSE_SERVER" in message:
-            self.lstnumbers.insert(END, message)
+            self.start_window.lstnumbers.insert(END, message)
             self.messages_queue.task_done()
             message = self.messages_queue.get()

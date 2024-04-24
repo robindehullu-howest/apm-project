@@ -12,6 +12,19 @@ from PIL import Image, ImageTk
 import base64
 import json
 
+class RoundedButton(tk.Button):
+    def __init__(self, master=None, **kwargs):
+        super().__init__(master, **kwargs)
+        self.config(relief=tk.FLAT, bg="#1DB954", fg="white", bd=0)
+        self.bind("<Enter>", self.on_enter)
+        self.bind("<Leave>", self.on_leave)
+        
+    def on_enter(self, event):
+        self.config(bg="#1ED760")
+
+    def on_leave(self, event):
+        self.config(bg="#1DB954")
+
 class Application:
     def __init__(self, window):
         self.window = window
@@ -148,10 +161,10 @@ class Application:
         self.password_entry = tk.Entry(frame, show="*")
         self.password_entry.grid(row=3, column=0, pady=(0, 5), padx=5, sticky="ew")
 
-        self.login_button = tk.Button(frame, text="Login", command=self.send_login_info, bg="#1DB954", fg="white")
+        self.login_button = RoundedButton(frame, text="Login", command=self.send_login_info, bg="#1DB954", fg="white")
         self.login_button.grid(row=4, column=0, pady=5)
 
-        self.register_window_button = tk.Button(frame, text="Register", command=self.create_register_screen, bg="#1DB954", fg="white")
+        self.register_window_button = RoundedButton(frame, text="Register", command=self.create_register_screen, bg="#1DB954", fg="white")
         self.register_window_button.grid(row=5, column=0, pady=5)
 
     def create_register_screen(self):
@@ -174,7 +187,7 @@ class Application:
         self.register_password_entry = tk.Entry(self.register_window, show="*")
         self.register_password_entry.pack()
 
-        self.register_button = tk.Button(self.register_window, text="Register", command=self.send_register_info, bg="#1DB954", fg="white")
+        self.register_button = RoundedButton(self.register_window, text="Register", command=self.send_register_info, bg="#1DB954", fg="white")
         self.register_button.pack()
 
     def create_main_menu(self):
@@ -197,16 +210,16 @@ class Application:
 
         button_font = ("Arial", 12, "bold")
 
-        self.choice1_button = tk.Button(self.window, text="Get popular songs of artist", command=self.choice1, bg="#1DB954", fg="white", height=3, width=3, font=button_font)
+        self.choice1_button = RoundedButton(self.window, text="Get popular songs of artist", command=self.choice1, bg="#1DB954", fg="white", height=3, width=3, font=button_font)
         self.choice1_button.grid(row=1, column=0, padx=10, pady=5, sticky="ew")
 
-        self.choice2_button = tk.Button(self.window, text="Most popular songs per year", command=self.choice2, bg="#1DB954", fg="white", height=3, width=3, font=button_font)
+        self.choice2_button = RoundedButton(self.window, text="Most popular songs per year", command=self.choice2, bg="#1DB954", fg="white", height=3, width=3, font=button_font)
         self.choice2_button.grid(row=1, column=1, padx=10, pady=5, sticky="ew")
 
-        self.choice3_button = tk.Button(self.window, text="Number of Spotify-playlists where song is found", command=self.choice3, bg="#1DB954", fg="white", height=3, width=3, font=button_font)
+        self.choice3_button = RoundedButton(self.window, text="Number of Spotify-playlists where song is found", command=self.choice3, bg="#1DB954", fg="white", height=3, width=3, font=button_font)
         self.choice3_button.grid(row=2, column=0, padx=10, pady=5, sticky="ew")
 
-        self.choice4_button = tk.Button(self.window, text="Graph of total streams per year", command=self.choice4, bg="#1DB954", fg="white", height=3, width=3, font=button_font)
+        self.choice4_button = RoundedButton(self.window, text="Graph of total streams per year", command=self.choice4, bg="#1DB954", fg="white", height=3, width=3, font=button_font)
         self.choice4_button.grid(row=2, column=1, padx=10, pady=5, sticky="ew")
 
         # Configure column weights to center the widgets
@@ -226,7 +239,7 @@ class Application:
         # w = Spinbox(self.artist_window, from_=0, to=50)
         # w.pack()
 
-        self.songs_button = tk.Button(self.artist_window, text="Get popular songs for artist", command=self.send_choice1, bg="#1DB954", fg="white")
+        self.songs_button = RoundedButton(self.artist_window, text="Get popular songs for artist", command=self.send_choice1, bg="#1DB954", fg="white")
         self.songs_button.pack()
 
         pop_songs_artist_label = tk.Label(self.artist_window, text="Popular Songs:", bg="#191414", fg="white")
@@ -250,7 +263,7 @@ class Application:
         # w = Spinbox(self.year_window, from_=0, to=50)
         # w.pack()
 
-        self.songs_button = tk.Button(self.year_window, text="Get popular songs", command=self.send_choice2, bg="#1DB954", fg="white")
+        self.songs_button = RoundedButton(self.year_window, text="Get popular songs", command=self.send_choice2, bg="#1DB954", fg="white")
         self.songs_button.pack()
 
         pop_songs_year_label = tk.Label(self.year_window, text="Popular Songs:", bg="#191414", fg="white")
@@ -274,7 +287,7 @@ class Application:
         self.play_entry = tk.Entry(self.play_window)
         self.play_entry.pack()
 
-        self.songs_button = tk.Button(self.play_window, text="Get Spotify-playlists", command=self.send_choice3, bg="#1DB954", fg="white")
+        self.songs_button = RoundedButton(self.play_window, text="Get Spotify-playlists", command=self.send_choice3, bg="#1DB954", fg="white")
         self.songs_button.pack()
 
         pop_songs_play_label = tk.Label(self.play_window, text="Number of Spotify-Playlists:", bg="#191414", fg="white")
