@@ -10,6 +10,7 @@ import tkinter as tk
 from tkinter import *
 
 from Server import Server
+from ClientHandler import search_counts
 
 
 class ServerWindow(Frame):
@@ -36,8 +37,8 @@ class ServerWindow(Frame):
         self.master.users_button = tk.Button(frame, text="Get logged in users", command=self.ingelogde_users, bg="#1DB954", fg="white")
         self.master.users_button.grid(row=1, column=0, pady=(5, 5), padx=(5, 5), sticky=N + S + E + W)
 
-        # self.master.popularity_button = tk.Button(frame, text="View searches", command=self.view_searches, bg="#1DB954", fg="white")
-        # self.master.popularity_button.grid(row=2, column=0, pady=(5, 5), padx=(5, 5), sticky=N + S + E + W)
+        self.master.popularity_button = tk.Button(frame, text="View searches", command=self.view_searches, bg="#1DB954", fg="white")
+        self.master.popularity_button.grid(row=2, column=0, pady=(5, 5), padx=(5, 5), sticky=N + S + E + W)
 
 
     def Start_Window(self):
@@ -48,7 +49,7 @@ class ServerWindow(Frame):
 
         self.start_window.configure(bg="#191414")
 
-        Label(self.start_window, text="Log-berichten server:").grid(row=0)
+        Label(self.start_window, text="Log-berichten server:", bg="#191414", fg="white").grid(row=0)
         self.start_window.scrollbar = Scrollbar(self.start_window, orient=VERTICAL)
         self.start_window.lstnumbers = Listbox(self.start_window, yscrollcommand=self.start_window.scrollbar.set, bg="#191414", fg="white")
         self.start_window.scrollbar.config(command=self.start_window.lstnumbers.yview)
@@ -85,6 +86,25 @@ class ServerWindow(Frame):
             users_listbox.insert(END, "No logged-in users")
 
         close_button = Button(users_window, text="Close", command=users_window.destroy, bg="#1DB954", fg="white")
+        close_button.pack(pady=10)
+
+    def view_searches(self):
+        global search_counts
+        searches_window = tk.Toplevel(self.master)
+        searches_window.title("Searches")
+        searches_window.geometry("300x200")
+        searches_window.configure(bg="#191414")
+
+        searches_title_label = Label(searches_window, text="Searches", bg="#191414", fg="white")
+        searches_title_label.pack()
+
+        for search_type, count in search_counts.items():
+            searches_labeltype = Label(searches_window, text=search_type, bg="#191414", fg="white")
+            searches_labeltype.pack(fill="both", expand=True)
+            searches_labelcount = Label(searches_window, text=count, bg="#191414", fg="white")
+            searches_labelcount.pack(fill="both", expand=True)
+
+        close_button = Button(searches_window, text="Close", command=searches_window.destroy, bg="#1DB954", fg="white")
         close_button.pack(pady=10)
 
 

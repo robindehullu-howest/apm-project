@@ -15,6 +15,13 @@ import hashlib
 
 from Models.User import User
 
+search_counts = {
+    "Artiest": 0,
+    "Jaar": 0,
+    "Playlist": 0,
+    "Graph": 0
+}
+
 class ClientHandler(threading.Thread):
     clienthandler_count = 0
 
@@ -36,33 +43,33 @@ class ClientHandler(threading.Thread):
         command = self.io_stream_client.readline().rstrip('\n')
         while command != "CLOSE":
             self.__print_message_gui_server(f"Command received: {command}")
-
+            global search_counts
             if command == "LOGIN":
                 self.__handle_login()
             elif command == "REGISTER":
                 self.__handle_register()
             elif command == "ARTIST":
                 self.__handle_artist()
-                self.tellerArtiest += 1
+                # self.tellerArtiest += 1
+                search_counts["Artiest"] += 1
             elif command == "YEAR":
                 self.__handle_year()
-                self.tellerJaar += 1
+                # self.tellerJaar += 1
+                search_counts["Jaar"] += 1
             elif command == "PLAYLIST":
                 self.__handle_playlist()
-                self.tellerPlaylist += 1
+                # self.tellerPlaylist += 1
+                search_counts["Playlist"] += 1
             elif command == "GRAPH":
                 self.__handle_graph()
-                self.tellerGraph += 1
+                # self.tellerGraph += 1
+                search_counts["Graph"] += 1
 
             self.__print_message_gui_server(f"Times requested: Artist: {self.tellerArtiest}, Year: {self.tellerJaar}, Playlist: {self.tellerPlaylist}, Graph: {self.tellerGraph}")
 
             command = self.io_stream_client.readline().rstrip('\n')
 
         self.__print_message_gui_server("Connection with client closed...")
-        self.tellerArtiest = 0
-        self.tellerJaar = 0
-        self.tellerPlaylist = 0
-        self.tellerGraph = 0
         self.io_stream_client.close()
         self.socket_to_client.close()
 
