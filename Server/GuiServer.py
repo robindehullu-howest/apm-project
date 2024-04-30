@@ -13,6 +13,8 @@ from Server import Server
 from ClientHandler import search_counts
 
 
+LOGGED_USERS_PATH = "./Data/logged_users.txt"
+
 class ServerWindow(Frame):
     def __init__(self, master=None):
         Frame.__init__(self, master)
@@ -78,7 +80,7 @@ class ServerWindow(Frame):
         users_listbox.pack(fill="both", expand=True)
 
         try:
-            with open("../Data/loggedusers.txt", "r") as file:
+            with open(LOGGED_USERS_PATH, "r") as file:
                 logged_users = file.readlines()
                 for user in logged_users:
                     users_listbox.insert(END, user.strip())

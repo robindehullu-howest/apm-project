@@ -15,6 +15,10 @@ import hashlib
 
 from Models.User import User
 
+SPOTIFY_DATA_PATH = "./Data/spotify_data.csv"
+USERS_PATH = "./Data/users.txt"
+LOGGED_USERS_PATH = "./Data/logged_users.txt"
+
 search_counts = {
     "Artiest": 0,
     "Jaar": 0,
@@ -30,7 +34,7 @@ class ClientHandler(threading.Thread):
         self.socket_to_client = socketclient
         self.io_stream_client = self.socket_to_client.makefile(mode='rw')
         self.messages_queue = messages_queue
-        self.data = pd.read_csv("../Data/spotify_data.csv")
+        self.data = pd.read_csv(SPOTIFY_DATA_PATH)
         self.id = ClientHandler.clienthandler_count
         ClientHandler.clienthandler_count += 1
         self.tellerArtiest = 0
@@ -74,10 +78,9 @@ class ClientHandler(threading.Thread):
         self.socket_to_client.close()
 
     @staticmethod
-    def register_user(username: str, password: str):
-        password = hashlib.sha256(password.encode()).hexdigest()
+    def __register_user(username: str, password: str):
         user = User(username, password)
-        my_writer_obj = open("../Data/users.txt", mode='ab')
+        my_writer_obj = open(USERS_PATH, mode='ab')
         pickle.dump(user, my_writer_obj)
         my_writer_obj.close()
 
@@ -99,18 +102,18 @@ class ClientHandler(threading.Thread):
         # email = self.io_stream_client.readline().rstrip('\n')
         password = self.io_stream_client.readline().rstrip('\n')
 
-        self.register_user(username, password)
+        self.__register_user(username, password)
         message = "Registration successful\n"
         self.io_stream_client.write(message)
         self.io_stream_client.flush()
         self.__print_message_gui_server(message)
 
     def __store_logged_user(self, username, password):
-        with open("../Data/loggedusers.txt", "a") as file:
+        with open(LOGGED_USERS_PATH, "a") as file:
             file.write(f"Username: {username}, Password:{password}\n")
     
     def __check_credentials(self, input_user: User):
-        with open("../Data/users.txt", mode='rb') as my_reader_obj:
+        with open(USERS_PATH, mode='rb') as my_reader_obj:
             while True:
                 try:
                     stored_user = pickle.load(my_reader_obj)

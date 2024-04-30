@@ -69,7 +69,7 @@ class Application:
         username = self.register_username_entry.get()
         # nickname = self.register_nickname_entry.get()
         # email = self.register_email_entry.get()
-        password = self.register_password_entry.get()
+        password = hashlib.sha256(self.password_entry.get().encode()).hexdigest()
 
         self.io_stream_server.write("REGISTER\n")
         self.io_stream_server.write(f"{username}\n")

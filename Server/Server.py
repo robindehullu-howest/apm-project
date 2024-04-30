@@ -12,6 +12,8 @@ from ClientHandler import ClientHandler
 
 logging.basicConfig(level=logging.INFO)
 
+LOGGED_USERS_PATH = "./Data/logged_users.txt"
+
 class Server(threading.Thread):
     def __init__(self, host, port, message_queue):
         threading.Thread.__init__(self, name="Thread-Server")
@@ -41,7 +43,7 @@ class Server(threading.Thread):
     
     def clear_logged_users(self):
         # Clear the logged users file
-        with open("../Data/loggedusers.txt", "w") as file:
+        with open(LOGGED_USERS_PATH, "w") as file:
             file.write("")
 
     def run(self):
