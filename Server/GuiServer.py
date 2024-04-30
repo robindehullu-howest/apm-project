@@ -124,7 +124,8 @@ class ServerWindow(Frame):
         self.server.start()
 
     def stop_server(self):
-        self.server.close_server_socket()
+        if self.server is not None:
+            self.server.close_server_socket()
 
     def start_stop_server(self):
         if self.server is not None:

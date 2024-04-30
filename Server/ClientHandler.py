@@ -38,10 +38,6 @@ class ClientHandler(threading.Thread):
         self.id = ClientHandler.clienthandler_count
         ClientHandler.clienthandler_count += 1
         self.server_closing = False
-        self.tellerArtiest = 0
-        self.tellerJaar = 0
-        self.tellerPlaylist = 0
-        self.tellerGraph = 0
 
     def run(self):
         self.__print_message_gui_server("Started & waiting...")
@@ -55,22 +51,18 @@ class ClientHandler(threading.Thread):
                 self.__handle_register()
             elif command == "ARTIST":
                 self.__handle_artist()
-                # self.tellerArtiest += 1
                 search_counts["Artiest"] += 1
             elif command == "YEAR":
                 self.__handle_year()
-                # self.tellerJaar += 1
                 search_counts["Jaar"] += 1
             elif command == "PLAYLIST":
                 self.__handle_playlist()
-                # self.tellerPlaylist += 1
                 search_counts["Playlist"] += 1
             elif command == "GRAPH":
                 self.__handle_graph()
-                # self.tellerGraph += 1
                 search_counts["Graph"] += 1
 
-            self.__print_message_gui_server(f"Times requested: Artist: {self.tellerArtiest}, Year: {self.tellerJaar}, Playlist: {self.tellerPlaylist}, Graph: {self.tellerGraph}")
+            self.__print_message_gui_server(f"Times requested: Artist: {search_counts['Artiest']}, Year: {search_counts['Jaar']}, Playlist: {search_counts['Playlist']}, Graph: {search_counts['Graph']}")
 
             command = self.io_stream_client.readline().rstrip('\n')
 
@@ -82,45 +74,46 @@ class ClientHandler(threading.Thread):
         self.server_closing = True
 
     @staticmethod
-    def __register_user(username: str, password: str):
-        user = User(username, password)
-        my_writer_obj = open(USERS_PATH, mode='ab')
-        pickle.dump(user, my_writer_obj)
-        my_writer_obj.close()
+    def __register_user(username: str, email: str, password: str, nickname: str):
+        user = User(username, email, password, nickname)
+        with open(USERS_PATH, mode='ab') as my_writer_obj:
+            pickle.dump(user, my_writer_obj)
 
     def __handle_login(self):
-        username = self.io_stream_client.readline().rstrip('\n')
+        identifier = self.io_stream_client.readline().rstrip('\n')
         password = self.io_stream_client.readline().rstrip('\n')
-        is_valid = self.__check_credentials(User(username, password))
+        is_valid = self.__check_credentials(User(identifier, identifier, password))
         message = "Login successful\n" if is_valid else "Login failed\n"
         self.io_stream_client.write(message)
         self.io_stream_client.flush()
         self.__print_message_gui_server(message)
 
         if is_valid:
-            self.__store_logged_user(username, password)
+            self.__store_logged_user(identifier)
 
     def __handle_register(self):
         username = self.io_stream_client.readline().rstrip('\n')
-        # nickname = self.io_stream_client.readline().rstrip('\n')
-        # email = self.io_stream_client.readline().rstrip('\n')
+        nickname = self.io_stream_client.readline().rstrip('\n')
+        email = self.io_stream_client.readline().rstrip('\n')
         password = self.io_stream_client.readline().rstrip('\n')
 
-        self.__register_user(username, password)
+        self.__register_user(username, email, password, nickname)
         message = "Registration successful\n"
         self.io_stream_client.write(message)
         self.io_stream_client.flush()
         self.__print_message_gui_server(message)
 
-    def __store_logged_user(self, username, password):
+    def __store_logged_user(self, identifier: str):
         with open(LOGGED_USERS_PATH, "a") as file:
-            file.write(f"Username: {username}, Password:{password}\n")
+            file.write(f"Username: {identifier}\n")
     
     def __check_credentials(self, input_user: User):
         with open(USERS_PATH, mode='rb') as my_reader_obj:
             while True:
                 try:
                     stored_user = pickle.load(my_reader_obj)
+                    print(f"Stored user: {stored_user}")
+                    print(f"Input user: {input_user}")
                     if stored_user == input_user:
                         return True
                 except EOFError:
