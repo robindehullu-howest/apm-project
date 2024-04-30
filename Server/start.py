@@ -11,7 +11,7 @@ def callback():
     print("Active threads:")
     for thread in threading.enumerate():
         print(f">Thread name is {thread.name}.")
-    gui_server.afsluiten_server()
+    gui_server.stop_server()
     root.destroy()
 
 root = Tk()

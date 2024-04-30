@@ -17,30 +17,28 @@ LOGGED_USERS_PATH = "./Data/logged_users.txt"
 class Server(threading.Thread):
     def __init__(self, host, port, message_queue):
         threading.Thread.__init__(self, name="Thread-Server")
-        self.__is_connected = False
         self.host = host
         self.port = port
         self.message_queue = message_queue
         self.serversocket = None
 
-    @property
-    def is_connected(self):
-        return self.__is_connected
+        self.init_server()
     
     def init_server(self):
-        # Create a socket object
         self.serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.serversocket.bind((self.host, self.port))
         self.serversocket.listen(5)
-        self.__is_connected = True
         self.print_message_gui_server("Server started")
         logging.info("Server started")
 
     def close_server_socket(self):
-        if self.serversocket is not None:
+        try:
             self.serversocket.close()
+            self.print_message_gui_server("Server socket closed")
             self.clear_logged_users()
-    
+        except Exception as ex:
+            logging.error("Socket is already closed.")
+
     def clear_logged_users(self):
         # Clear the logged users file
         with open(LOGGED_USERS_PATH, "w") as file:
@@ -48,7 +46,7 @@ class Server(threading.Thread):
 
     def run(self):
         try:
-            while True:
+            while self.serversocket is not None:
                 self.print_message_gui_server("Waiting for a client...")
 
                 # Establish a connection
@@ -58,10 +56,17 @@ class Server(threading.Thread):
                 clh = ClientHandler(socket_to_client, self.message_queue)
                 clh.start()
                 self.print_message_gui_server(f"Current Thread count: {threading.active_count()}.")
+            
+            active_client_handlers = self.get_active_client_handlers()
+            for client_handler in active_client_handlers:
+                client_handler.close_socket = True
+
         except Exception as ex:
-            self.print_message_gui_server("Server socket closed")
             self.print_message_gui_server(ex)
             logging.error(f"Error in Server: {ex}")
 
     def print_message_gui_server(self, message):
         self.message_queue.put(f"Server:> {message}")
+
+    def get_active_client_handlers(self):
+        return [t for t in threading.enumerate() if isinstance(t, ClientHandler)]

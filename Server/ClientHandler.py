@@ -37,6 +37,7 @@ class ClientHandler(threading.Thread):
         self.data = pd.read_csv(SPOTIFY_DATA_PATH)
         self.id = ClientHandler.clienthandler_count
         ClientHandler.clienthandler_count += 1
+        self.server_closing = False
         self.tellerArtiest = 0
         self.tellerJaar = 0
         self.tellerPlaylist = 0
@@ -45,7 +46,7 @@ class ClientHandler(threading.Thread):
     def run(self):
         self.__print_message_gui_server("Started & waiting...")
         command = self.io_stream_client.readline().rstrip('\n')
-        while command != "CLOSE":
+        while not (command == "CLOSE" or self.server_closing):
             self.__print_message_gui_server(f"Command received: {command}")
             global search_counts
             if command == "LOGIN":
@@ -76,6 +77,9 @@ class ClientHandler(threading.Thread):
         self.__print_message_gui_server("Connection with client closed...")
         self.io_stream_client.close()
         self.socket_to_client.close()
+
+    def close_socket(self):
+        self.server_closing = True
 
     @staticmethod
     def __register_user(username: str, password: str):
@@ -123,7 +127,6 @@ class ClientHandler(threading.Thread):
                     break
         return False
 
-    
     def __handle_artist(self):
         artist = self.io_stream_client.readline().rstrip('\n')
         popular_songs = self.__get_popular_songs_of_artist(artist)
@@ -198,7 +201,7 @@ class ClientHandler(threading.Thread):
 
 
     def __get_playlists_of_song(self, song):
-        playlist_data = self.data[self.data['track_name'] == song]
+        playlist_data = self.data[self.data['track_name'].str.lower() == song.lower()]
 
         if playlist_data.empty:
             return None
