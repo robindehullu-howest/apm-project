@@ -13,7 +13,7 @@ from Server import Server
 from ClientHandler import search_counts
 
 
-LOGGED_USERS_PATH = "./Data/logged_users.txt"
+LOGGED_USERS_PATH = "../Data/logged_users.txt"
 
 BUTTON_COLOR = "#1DB954"
 BACKGROUND_COLOR = "#191414"
@@ -36,13 +36,20 @@ class ServerWindow(Frame):
         self.master.geometry("400x400")
         self.master.configure(bg=BACKGROUND_COLOR)
 
-        self.master.start_button = tk.Button(frame, text="Start server", command=self.start_server_window, bg=BUTTON_COLOR, fg="white")
+        button_font = ("Arial", 12, "bold")
+
+        self.master.grid_rowconfigure(0, weight=1)
+        self.master.grid_columnconfigure(0, weight=1)
+        frame.grid_rowconfigure(0, weight=1)
+        frame.grid_columnconfigure(0, weight=1)
+
+        self.master.start_button = tk.Button(frame, text="Start server", command=self.start_server_window, bg=BUTTON_COLOR, fg="white", font=button_font)
         self.master.start_button.grid(row=0, column=0, pady=(5, 5), padx=(5, 5), sticky=N + S + E + W)
 
-        self.master.users_button = tk.Button(frame, text="Get logged in users", command=self.ingelogde_users, bg=BUTTON_COLOR, fg="white")
+        self.master.users_button = tk.Button(frame, text="Get logged in users", command=self.ingelogde_users, bg=BUTTON_COLOR, fg="white", font=button_font)
         self.master.users_button.grid(row=1, column=0, pady=(5, 5), padx=(5, 5), sticky=N + S + E + W)
 
-        self.master.popularity_button = tk.Button(frame, text="View searches", command=self.view_searches, bg=BUTTON_COLOR, fg="white")
+        self.master.popularity_button = tk.Button(frame, text="View searches", command=self.view_searches, bg=BUTTON_COLOR, fg="white", font=button_font)
         self.master.popularity_button.grid(row=2, column=0, pady=(5, 5), padx=(5, 5), sticky=N + S + E + W)
 
 

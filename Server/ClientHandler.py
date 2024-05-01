@@ -15,9 +15,9 @@ import hashlib
 
 from Models.User import User
 
-SPOTIFY_DATA_PATH = "./Data/spotify_data.csv"
-USERS_PATH = "./Data/users.txt"
-LOGGED_USERS_PATH = "./Data/logged_users.txt"
+SPOTIFY_DATA_PATH = "../Data/spotify_data.csv"
+USERS_PATH = "../Data/users.txt"
+LOGGED_USERS_PATH = "../Data/logged_users.txt"
 
 search_counts = {
     "Artiest": 0,

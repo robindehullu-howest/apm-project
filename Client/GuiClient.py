@@ -45,7 +45,7 @@ class Application:
             treeview.delete(item)
 
 
-    # Sending data to server
+################################################# Server communication #################################################
 
     def send_login_info(self):
         identifier = self.identifier_entry.get()
@@ -140,9 +140,7 @@ class Application:
             logging.info(f"Number of Spotify-Playlists: {number_of_playlists}")
 
 
-
-
-    # Window creation functions
+################################################# Window creation #################################################
 
     def create_login_screen(self):
         frame = tk.Frame(self.window, bg=BACKGROUND_COLOR)
@@ -171,38 +169,85 @@ class Application:
         self.register_window_button = RoundedButton(frame, text="Register", command=self.create_register_screen, bg=BUTTON_COLOR, fg="white")
         self.register_window_button.grid(row=5, column=0, pady=5)
 
+    # def create_register_screen(self):
+    #     self.register_window = tk.Toplevel(window)
+    #     self.register_window.title("Register user")
+    #     self.register_window.geometry("400x400")
+    #     self.register_window.configure(bg=BACKGROUND_COLOR)
+    #     self.register_window.grid(pady=10)
+
+    #     self.register_window.grid_rowconfigure(0, weight=1)
+    #     self.register_window.grid_columnconfigure(0, weight=1)
+
+    #     self.register_username_label = tk.Label(self.register_window, text="Username:", bg=BACKGROUND_COLOR, fg="white")
+    #     self.register_username_label.pack()
+
+    #     self.register_username_entry = tk.Entry(self.register_window)
+    #     self.register_username_entry.pack()
+
+    #     self.register_nickname_label = tk.Label(self.register_window, text="Nickname:", bg=BACKGROUND_COLOR, fg="white")
+    #     self.register_nickname_label.pack()
+
+    #     self.register_nickname_entry = tk.Entry(self.register_window)
+    #     self.register_nickname_entry.pack()
+
+    #     self.register_email_label = tk.Label(self.register_window, text="Email:", bg=BACKGROUND_COLOR, fg="white")
+    #     self.register_email_label.pack()
+
+    #     self.register_email_entry = tk.Entry(self.register_window)
+    #     self.register_email_entry.pack()
+
+    #     self.register_password_label = tk.Label(self.register_window, text="Password:", bg=BACKGROUND_COLOR, fg="white")
+    #     self.register_password_label.pack()
+
+    #     self.register_password_entry = tk.Entry(self.register_window, show="*")
+    #     self.register_password_entry.pack()
+
+    #     self.register_button = RoundedButton(self.register_window, text="Register", command=self.send_register_info, bg=BUTTON_COLOR, fg="white")
+    #     self.register_button.pack()
+
     def create_register_screen(self):
         self.register_window = tk.Toplevel(window)
         self.register_window.title("Register user")
         self.register_window.geometry("400x400")
         self.register_window.configure(bg=BACKGROUND_COLOR)
 
-        self.register_username_label = tk.Label(self.register_window, text="Username:", bg=BACKGROUND_COLOR, fg="white")
-        self.register_username_label.pack()
+        frame = tk.Frame(self.register_window, bg=BACKGROUND_COLOR)
+        frame.grid(pady=10)
 
-        self.register_username_entry = tk.Entry(self.register_window)
-        self.register_username_entry.pack()
+        self.register_window.grid_rowconfigure(0, weight=1)
+        self.register_window.grid_columnconfigure(0, weight=1)
+        frame.grid_rowconfigure(0, weight=1)
+        frame.grid_columnconfigure(0, weight=1)
 
-        self.register_nickname_label = tk.Label(self.register_window, text="Nickname:", bg=BACKGROUND_COLOR, fg="white")
-        self.register_nickname_label.pack()
+        self.register_username_label = tk.Label(frame, text="Username:", bg=BACKGROUND_COLOR, fg="white")
+        self.register_username_label.grid(row=0, column=0, pady=(5, 2), sticky="w")
 
-        self.register_nickname_entry = tk.Entry(self.register_window)
-        self.register_nickname_entry.pack()
+        self.register_username_entry = tk.Entry(frame)
+        self.register_username_entry.grid(row=1, column=0, pady=(0, 5), padx=5, sticky="ew")
 
-        self.register_email_label = tk.Label(self.register_window, text="Email:", bg=BACKGROUND_COLOR, fg="white")
-        self.register_email_label.pack()
+        self.register_nickname_label = tk.Label(frame, text="Nickname:", bg=BACKGROUND_COLOR, fg="white")
+        self.register_nickname_label.grid(row=2, column=0, pady=(5, 2), sticky="w")
 
-        self.register_email_entry = tk.Entry(self.register_window)
-        self.register_email_entry.pack()
+        self.register_nickname_entry = tk.Entry(frame)
+        self.register_nickname_entry.grid(row=3, column=0, pady=(0, 5), padx=5, sticky="ew")
 
-        self.register_password_label = tk.Label(self.register_window, text="Password:", bg=BACKGROUND_COLOR, fg="white")
-        self.register_password_label.pack()
+        self.register_email_label = tk.Label(frame, text="Email:", bg=BACKGROUND_COLOR, fg="white")
+        self.register_email_label.grid(row=4, column=0, pady=(5, 2), sticky="w")
 
-        self.register_password_entry = tk.Entry(self.register_window, show="*")
-        self.register_password_entry.pack()
+        self.register_email_entry = tk.Entry(frame)
+        self.register_email_entry.grid(row=5, column=0, pady=(0, 5), padx=5, sticky="ew")
 
-        self.register_button = RoundedButton(self.register_window, text="Register", command=self.send_register_info, bg=BUTTON_COLOR, fg="white")
-        self.register_button.pack()
+        self.register_password_label = tk.Label(frame, text="Password:", bg=BACKGROUND_COLOR, fg="white")
+        self.register_password_label.grid(row=6, column=0, pady=(5, 2), sticky="w")
+
+        self.register_password_entry = tk.Entry(frame, show="*")
+        self.register_password_entry.grid(row=7, column=0, pady=(0, 5), padx=5, sticky="ew")
+
+        self.register_button = RoundedButton(frame, text="Register", command=self.send_register_info, bg=BUTTON_COLOR, fg="white")
+        self.register_button.grid(row=8, column=0, pady=5)
+
+
 
     def create_main_menu(self):
         # Hide previous widgets
@@ -244,12 +289,12 @@ class Application:
         self.window.grid_columnconfigure(1, weight=1)
 
 
-    # Button callback functions
+################################################# Button functions/windows #################################################
 
     def choice1(self):
         self.artist_window = tk.Toplevel(window)
         self.artist_window.title("Artist")
-        self.artist_window.geometry("400x400")
+        self.artist_window.geometry("800x400")
         self.artist_window.configure(bg=BACKGROUND_COLOR)
 
         self.artist_label = tk.Label(self.artist_window, text="Artist:", bg=BACKGROUND_COLOR, fg="white")
@@ -273,7 +318,7 @@ class Application:
     def choice2(self):
         self.year_window = tk.Toplevel(window)
         self.year_window.title("popular songs (year)")
-        self.year_window.geometry("400x400")
+        self.year_window.geometry("800x400")
         self.year_window.configure(bg=BACKGROUND_COLOR)
 
         self.year_label = tk.Label(self.year_window, text="Enter year:", bg=BACKGROUND_COLOR, fg="white")
