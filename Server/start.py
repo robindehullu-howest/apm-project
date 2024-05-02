@@ -1,13 +1,12 @@
-import sys
 import os
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
+import sys
 import threading
-from tkinter import *
+from tkinter import Tk
 
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from GuiServer import ServerWindow
 
-def callback():
+def cleanup():
     print("Active threads:")
     for thread in threading.enumerate():
         print(f">Thread name is {thread.name}.")
@@ -16,6 +15,9 @@ def callback():
 
 root = Tk()
 root.geometry("600x500")
+
 gui_server = ServerWindow(root)
-root.protocol("WM_DELETE_WINDOW", callback)
+
+root.protocol("WM_DELETE_WINDOW", cleanup)
+
 root.mainloop()

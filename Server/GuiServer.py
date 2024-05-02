@@ -10,10 +10,10 @@ import tkinter as tk
 from tkinter import *
 
 from Server import Server
-from ClientHandler import search_counts
+from ClientHandler import SEARCH_COUNTS
 
 
-LOGGED_USERS_PATH = "../Data/logged_users.txt"
+LOGGED_USERS_PATH = "./Data/logged_users.txt"
 
 BUTTON_COLOR = "#1DB954"
 BACKGROUND_COLOR = "#191414"
@@ -58,10 +58,7 @@ class ServerWindow(Frame):
 
 
     def start_server_window(self):
-        start_window = tk.Toplevel(self.master)
-        start_window.title("Register user")
-        start_window.geometry("400x400")
-        start_window.configure(bg=BACKGROUND_COLOR)
+        start_window = self.__create_window("Start server", "400x400", BACKGROUND_COLOR)
 
         Label(start_window, text="Log-berichten server:", bg=BACKGROUND_COLOR, fg="white").grid(row=0)
 
@@ -89,10 +86,7 @@ class ServerWindow(Frame):
         self.start_stop_server()
 
     def active_users_window(self):
-        users_window = tk.Toplevel(self.master)
-        users_window.title("Logged-in Users")
-        users_window.geometry("300x200")
-        users_window.configure(bg=BACKGROUND_COLOR)
+        users_window = self.__create_window("Logged-in Users", "300x200", BACKGROUND_COLOR)
 
         logged_users_label = Label(users_window, text="Logged-in Users", bg=BACKGROUND_COLOR, fg="white")
         logged_users_label.pack()
@@ -112,16 +106,13 @@ class ServerWindow(Frame):
         close_button.pack(pady=10)
 
     def searches_window(self):
-        global search_counts
-        searches_window = tk.Toplevel(self.master)
-        searches_window.title("Searches")
-        searches_window.geometry("300x200")
-        searches_window.configure(bg=BACKGROUND_COLOR)
+        global SEARCH_COUNTS
+        searches_window = self.__create_window("Searches", "300x200", BACKGROUND_COLOR)
 
         searches_title_label = Label(searches_window, text="Searches", bg=BACKGROUND_COLOR, fg="white")
         searches_title_label.pack()
 
-        for search_type, count in search_counts.items():
+        for search_type, count in SEARCH_COUNTS.items():
             searches_labeltype = Label(searches_window, text=search_type, bg=BACKGROUND_COLOR, fg="white")
             searches_labeltype.pack(fill="both", expand=True)
             searches_labelcount = Label(searches_window, text=count, bg=BACKGROUND_COLOR, fg="white")
@@ -131,10 +122,7 @@ class ServerWindow(Frame):
         close_button.pack(pady=10)
 
     def broadcast_message_window(self):
-        self.broadcast_window = tk.Toplevel(self.master)
-        self.broadcast_window.title("Broadcast message")
-        self.broadcast_window.geometry("300x200")
-        self.broadcast_window.configure(bg=BACKGROUND_COLOR)
+        self.broadcast_window = self.__create_window("Broadcast message", "300x200", BACKGROUND_COLOR)
 
         self.broadcast_window.grid_rowconfigure(0, weight=1)
         self.broadcast_window.grid_rowconfigure(3, weight=1)
@@ -170,6 +158,13 @@ class ServerWindow(Frame):
         else:
             self.start_server()          #thread!
             self.start_window.btn_text.set("Stop server")
+
+    def __create_window(self, title, geometry, bg_color):
+        window = tk.Toplevel(self.master)
+        window.title(title)
+        window.geometry(geometry)
+        window.configure(bg=bg_color)
+        return window
 
     def __del__(self):
         self.messages_queue.put("CLOSE_WINDOW")

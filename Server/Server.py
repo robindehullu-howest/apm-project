@@ -12,7 +12,7 @@ from ClientHandler import ClientHandler
 
 logging.basicConfig(level=logging.INFO)
 
-LOGGED_USERS_PATH = "../Data/logged_users.txt"
+LOGGED_USERS_PATH = "./Data/logged_users.txt"
 
 class Server(threading.Thread):
     def __init__(self, host, port, message_queue):

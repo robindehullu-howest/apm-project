@@ -7,6 +7,7 @@ import socket
 import hashlib
 from PIL import Image, ImageTk
 from queue import Queue
+from typing import List
 import base64
 import json
 import threading
@@ -117,14 +118,25 @@ class Application:
             self.pop_songs_artist_tree.insert('', 'end',text=index, values=[song])
 
     def process_year_reply(self, pop_songs):
-        self.clear_table(self.pop_songs_year_tree)  # vorige opvraging verwijderen
+        self.clear_table(self.popsongs_year_tree)  # Clear previous query
+    
         try:
             pop_songs_json = json.loads(pop_songs)
+
+            if pop_songs_json == "No songs found.":
+                self.insert_into_popsongs_year_tree([pop_songs_json])
+                return
+
             for index, (song, artists) in enumerate(pop_songs_json.items(), start=1):
-                self.pop_songs_year_tree.insert('', 'end', text=index, values=[song, artists])
+                artists_str = ', '.join(artists)
+                self.insert_into_popsongs_year_tree([song, artists_str], index)
+    
         except Exception as e:
-            self.pop_songs_year_tree.insert('', 'end', values=[pop_songs])  # Insert error message directly into treeview
+            self.insert_into_popsongs_year_tree([pop_songs])
             logging.error(f"Error: {e}")
+    
+    def insert_into_popsongs_year_tree(self, values, index=''):
+        self.popsongs_year_tree.insert('', 'end', text=index, values=values)
 
     def process_playlist_reply(self, playlist_count):
         if playlist_count == "No playlists found.":
@@ -182,32 +194,21 @@ class Application:
 
     def send_choice1(self):
         artist = self.artist_entry.get()
-        self.io_stream_server.write("ARTIST\n")
-        self.io_stream_server.write(f"{artist}\n")
-        self.io_stream_server.flush()
-
+        self.send_messages("ARTIST", [artist])
         logging.info("Waiting for answer from server...")
 
     def send_choice2(self):
         year = self.year_entry.get()
-        self.io_stream_server.write("YEAR\n")
-        self.io_stream_server.write(f"{year}\n")
-        self.io_stream_server.flush()
-
+        self.send_messages("YEAR", [year])
         logging.info("Waiting for answer from server...")
 
     def send_choice3(self):
         song = self.play_entry.get()
-        self.io_stream_server.write("PLAYLIST\n")
-        self.io_stream_server.write(f"{song}\n")
-        self.io_stream_server.flush()
-
+        self.send_messages("PLAYLIST", [song])
         logging.info("Waiting for answer from server...")
 
     def send_choice4(self):
-        self.io_stream_server.write("GRAPH\n")
-        self.io_stream_server.flush()
-
+        self.send_message("GRAPH")
         logging.info("Waiting for graph from server...")
 
 
@@ -404,12 +405,12 @@ class Application:
         pop_songs_year_label = tk.Label(frame, text="Popular Songs:", bg=BACKGROUND_COLOR, fg="white", font=LABEL_FONT)
         pop_songs_year_label.grid(row=3, column=0, pady=(5, 2), sticky="ew")
 
-        self.pop_songs_year_tree = ttk.Treeview(frame, columns=('Number','Popular Songs','Artist(s)'))
-        self.pop_songs_year_tree.heading('#0', text='Number')
-        self.pop_songs_year_tree.heading('#1', text='Popular Songs')
-        self.pop_songs_year_tree.heading('#2', text='Artist(s)')
-        self.pop_songs_year_tree.column('#3', width=0, stretch=tk.NO)
-        self.pop_songs_year_tree.grid(row=4, column=0, pady=(0, 5), sticky="ew")
+        self.popsongs_year_tree = ttk.Treeview(frame, columns=('Number','Popular Songs','Artist(s)'))
+        self.popsongs_year_tree.heading('#0', text='Number')
+        self.popsongs_year_tree.heading('#1', text='Popular Songs')
+        self.popsongs_year_tree.heading('#2', text='Artist(s)')
+        self.popsongs_year_tree.column('#3', width=0, stretch=tk.NO)
+        self.popsongs_year_tree.grid(row=4, column=0, pady=(0, 5), sticky="ew")
 
 
     def choice3(self):
@@ -446,10 +447,19 @@ class Application:
     def close_connection(self):
         logging.info("Close connection with server...")
         self.keep_threads_alive = False
-        self.io_stream_server.write("CLOSE\n")
-        self.io_stream_server.flush()
+        self.send_message("CLOSE")
         self.io_stream_server.close()
         self.socket_to_server.close()
+
+    def send_message(self, message: str):
+        self.io_stream_server.write(f"{message}\n")
+        self.io_stream_server.flush()
+
+    def send_messages(self, topic: str, messages: List):
+        self.io_stream_server.write(f"{topic}\n")
+        for message in messages:
+            self.io_stream_server.write(f"{message}\n")
+        self.io_stream_server.flush()
 
 
 logging.basicConfig(level=logging.INFO)

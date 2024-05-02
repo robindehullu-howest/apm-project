@@ -15,15 +15,15 @@ from typing import List
 
 from Models.User import User
 
-SPOTIFY_DATA_PATH = "../Data/spotify_data.csv"
-USERS_PATH = "../Data/users.txt"
-LOGGED_USERS_PATH = "../Data/logged_users.txt"
+SPOTIFY_DATA_PATH = "./Data/spotify_data.csv"
+USERS_PATH = "./Data/users.txt"
+LOGGED_USERS_PATH = "./Data/logged_users.txt"
 
-search_counts = {
-    "Artiest": 0,
-    "Jaar": 0,
-    "Playlist": 0,
-    "Graph": 0
+SEARCH_COUNTS = {
+    "ARTIST": 0,
+    "YEAR": 0,
+    "PLAYLIST": 0,
+    "GRAPH": 0
 }
 
 class ClientHandler(threading.Thread):
@@ -41,30 +41,29 @@ class ClientHandler(threading.Thread):
 
     def run(self):
         self.__print_message_gui_server("Started & waiting...")
-        command = self.io_stream_client.readline().rstrip('\n')
-        while not (command == "CLOSE" or self.server_closing):
-            self.__print_message_gui_server(f"Command received: {command}")
-            global search_counts
-            if command == "LOGIN":
-                self.__handle_login()
-            elif command == "REGISTER":
-                self.__handle_register()
-            elif command == "ARTIST":
-                self.__handle_artist()
-                search_counts["Artiest"] += 1
-            elif command == "YEAR":
-                self.__handle_year()
-                search_counts["Jaar"] += 1
-            elif command == "PLAYLIST":
-                self.__handle_playlist()
-                search_counts["Playlist"] += 1
-            elif command == "GRAPH":
-                self.__handle_graph()
-                search_counts["Graph"] += 1
+        topic = self.read_line_from_client()
 
-            self.__print_message_gui_server(f"Times requested: Artist: {search_counts['Artiest']}, Year: {search_counts['Jaar']}, Playlist: {search_counts['Playlist']}, Graph: {search_counts['Graph']}")
+        command_handlers = {
+            "LOGIN": self.__handle_login,
+            "REGISTER": self.__handle_register,
+            "ARTIST": self.__handle_artist,
+            "YEAR": self.__handle_year,
+            "PLAYLIST": self.__handle_playlist,
+            "GRAPH": self.__handle_graph
+        }
 
-            command = self.io_stream_client.readline().rstrip('\n')
+        while not (topic == "CLOSE" or self.server_closing):
+            global SEARCH_COUNTS
+
+            self.__print_message_gui_server(f"Command received: {topic}")
+
+            if topic in command_handlers:
+                command_handlers[topic]()
+                SEARCH_COUNTS[topic] += 1
+
+            self.__print_message_gui_server(f"Times requested: Artist: {SEARCH_COUNTS['ARTIST']}, Year: {SEARCH_COUNTS['YEAR']}, Playlist: {SEARCH_COUNTS['PLAYLIST']}, Graph: {SEARCH_COUNTS['GRAPH']}")
+
+            topic = self.read_line_from_client()
 
         self.__print_message_gui_server("Connection with client closed...")
         self.io_stream_client.close()
@@ -80,9 +79,10 @@ class ClientHandler(threading.Thread):
         self.io_stream_client.flush()
 
     def __handle_login(self):
-        identifier = self.io_stream_client.readline().rstrip('\n')
-        password = self.io_stream_client.readline().rstrip('\n')
-        is_valid = self.__check_credentials(User(identifier, identifier, password))
+        identifier = self.read_line_from_client()
+        password = self.read_line_from_client()
+        user = User(identifier, identifier, password)
+        is_valid = self.__check_credentials(user)
         message = "Login successful" if is_valid else "Login failed"
         self.send_messages("LOGIN", [message])
         self.__print_message_gui_server(message)
@@ -108,12 +108,10 @@ class ClientHandler(threading.Thread):
         return False
 
     def __handle_register(self):
-        username = self.io_stream_client.readline().rstrip('\n')
-        nickname = self.io_stream_client.readline().rstrip('\n')
-        email = self.io_stream_client.readline().rstrip('\n')
-        password = self.io_stream_client.readline().rstrip('\n')
+        user_details = ['username', 'nickname', 'email', 'password']
+        user_info = {detail: self.read_line_from_client() for detail in user_details}
 
-        self.__register_user(username, email, password, nickname)
+        self.__register_user(user_info['username'], user_info['email'], user_info['password'], user_info['nickname'])
         message = "Registration successful"
         self.send_messages("REGISTRATION", [message])
         self.__print_message_gui_server(message)
@@ -125,7 +123,7 @@ class ClientHandler(threading.Thread):
             pickle.dump(user, my_writer_obj)
 
     def __handle_artist(self):
-        artist = self.io_stream_client.readline().rstrip('\n')
+        artist = self.read_line_from_client()
         popular_songs = self.__get_popular_songs_of_artist(artist)
         self.send_messages("ARTIST", [popular_songs])
 
@@ -143,7 +141,7 @@ class ClientHandler(threading.Thread):
         return top_songs
     
     def __handle_year(self):
-        year = int(self.io_stream_client.readline().rstrip('\n'))
+        year = int(self.read_line_from_client())
         popular_songs = json.dumps(self.__get_popular_songs_of_year(year))
         self.send_messages("YEAR", [popular_songs])
 
@@ -171,7 +169,7 @@ class ClientHandler(threading.Thread):
         return top_songs_dict
 
     def __handle_playlist(self):
-        song = self.io_stream_client.readline().rstrip('\n')
+        song = self.read_line_from_client()
         number_playlists = self.__get_playlists_of_song(song)
 
         self.send_messages("PLAYLIST", [number_playlists])
@@ -209,6 +207,8 @@ class ClientHandler(threading.Thread):
 
         self.send_messages("GRAPH", [img_string])
 
+    def read_line_from_client(self):
+        return self.io_stream_client.readline().rstrip('\n')
 
     def __print_message_gui_server(self, message):
         self.messages_queue.put(f"CLH {self.id}:> {message}")
