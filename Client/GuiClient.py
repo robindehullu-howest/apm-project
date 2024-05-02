@@ -6,8 +6,10 @@ import logging
 import socket
 import hashlib
 from PIL import Image, ImageTk
+from queue import Queue
 import base64
 import json
+import threading
 
 BUTTON_COLOR = "#1DB954"
 BUTTON_COLOR_ENTER = "#1ED760"
@@ -34,11 +36,16 @@ class Application:
         host = socket.gethostname()
         port = 9999
 
+        self.keep_threads_alive = True
+        self.message_queue = Queue()
+
         logging.info("Making connection with server...")
         self.socket_to_server.connect((host, port))
 
         self.window.geometry("600x400")
         self.create_login_screen()
+
+        self.start_receiving_messages()
 
     def clear_table(self, treeview):
         for item in treeview.get_children():
@@ -46,6 +53,97 @@ class Application:
 
 
 ################################################# Server communication #################################################
+
+    def receive_message(self):
+        while self.keep_threads_alive:
+            message = self.io_stream_server.readline().rstrip('\n')
+            logging.info(f"Message from server: {message}")
+            self.message_queue.put(message)
+
+    def start_receiving_messages(self):
+        receive_thread = threading.Thread(target=self.receive_message)
+        receive_thread.start()
+        process_thread = threading.Thread(target=self.process_message)
+        process_thread.start()
+
+    def process_message(self):
+        while self.keep_threads_alive:
+            topic = self.message_queue.get()
+            
+            if topic == "CLOSE":
+                self.close_connection()
+            if topic == "LOGIN":
+                login_reply = self.message_queue.get()
+                self.process_login_reply(login_reply)
+            if topic == "REGISTER":
+                register_reply = self.message_queue.get()
+                self.process_register_reply(register_reply)
+            if topic == "ARTIST":
+                popular_songs = self.message_queue.get()
+                self.process_artist_reply(popular_songs)
+            if topic == "YEAR":
+                pop_songs = self.message_queue.get()
+                self.process_year_reply(pop_songs)
+            if topic == "PLAYLIST":
+                playlist_count = self.message_queue.get()
+                self.process_playlist_reply(playlist_count)
+            if topic == "GRAPH":
+                image = self.message_queue.get()
+                self.process_graph_reply(image)
+
+    def process_login_reply(self, login_reply):
+        if login_reply == "Login successful":
+            self.create_main_menu()
+
+    def process_register_reply(self, register_reply):
+        if register_reply == "Register successful" and self.register_window is not None:
+            self.register_window.destroy()
+
+    def process_artist_reply(self, popular_songs):
+        popular_songs = popular_songs.split(';') 
+
+        self.clear_table(self.pop_songs_artist_tree)
+
+        for index, song in enumerate(popular_songs, start=1):
+            self.pop_songs_artist_tree.insert('', 'end',text=index, values=[song])
+
+    def process_year_reply(self, pop_songs):
+        self.clear_table(self.pop_songs_year_tree)  # vorige opvraging verwijderen
+        try:
+            pop_songs_json = json.loads(pop_songs)
+            for index, (song, artists) in enumerate(pop_songs_json.items(), start=1):
+                self.pop_songs_year_tree.insert('', 'end', text=index, values=[song, artists])
+        except Exception as e:
+            self.pop_songs_year_tree.insert('', 'end', values=[pop_songs])  # Insert error message directly into treeview
+            logging.error(f"Error: {e}")
+
+    def process_playlist_reply(self, playlist_count):
+        if playlist_count == "No playlists found.":
+            self.pop_songs_play["text"] = playlist_count
+            logging.info("No playlists found.")
+        else:
+            self.pop_songs_play["text"] = playlist_count
+            logging.info(f"Number of Spotify-Playlists: {playlist_count}")
+
+    def process_graph_reply(self, img_string):
+        img_bytes = base64.b64decode(img_string)
+
+        img = Image.open(io.BytesIO(img_bytes))
+
+        window_width = 800
+        window_height = 600
+        img = img.resize((window_width, window_height))
+        img = ImageTk.PhotoImage(img)
+
+        self.graph_window = tk.Toplevel(window)
+        self.graph_window.title("Streams per year")
+        self.graph_window.geometry("900x700")
+        self.graph_window.configure(bg=BACKGROUND_COLOR)
+
+
+        img_label = tk.Label(self.graph_window, image=img)
+        img_label.image = img
+        img_label.pack()
 
     def send_login_info(self):
         identifier = self.identifier_entry.get()
@@ -57,11 +155,6 @@ class Application:
         self.io_stream_server.flush()
 
         logging.info("Waiting for answer from server...")
-        message = self.io_stream_server.readline().rstrip('\n')
-        logging.info(f"Message from server: {message}")
-
-        if message == "Login successful":
-            self.create_main_menu()
 
     def send_register_info(self):
         username = self.register_username_entry.get()
@@ -77,10 +170,6 @@ class Application:
         self.io_stream_server.flush()
 
         logging.info("Waiting for answer from server...")
-        message = self.io_stream_server.readline().rstrip('\n')
-        logging.info(f"Message from server: {message}")
-
-        self.register_window.destroy()
 
     def send_choice1(self):
         artist = self.artist_entry.get()
@@ -89,16 +178,6 @@ class Application:
         self.io_stream_server.flush()
 
         logging.info("Waiting for answer from server...")
-        artist_name = self.io_stream_server.readline().rstrip('\n') 
-        popular_songs_str = self.io_stream_server.readline().rstrip('\n')
-        popular_songs = popular_songs_str.split(';') 
-
-        logging.info(f"Artist: {artist_name}, Popular Songs: {popular_songs}")
-
-        self.clear_table(self.pop_songs_artist_tree)
-
-        for index, song in enumerate(popular_songs, start=1):
-            self.pop_songs_artist_tree.insert('', 'end',text=index, values=[song])
 
     def send_choice2(self):
         year = self.year_entry.get()
@@ -107,22 +186,6 @@ class Application:
         self.io_stream_server.flush()
 
         logging.info("Waiting for answer from server...")
-        year = self.io_stream_server.readline().rstrip('\n') 
-        pop_songs_str = self.io_stream_server.readline().rstrip('\n')
-        
-        if pop_songs_str:
-            self.clear_table(self.pop_songs_year_tree)  # vorige opvraging verwijderen
-            try:
-                pop_songs_json = json.loads(pop_songs_str)
-                for index, (song, artists) in enumerate(pop_songs_json.items(), start=1):
-                    self.pop_songs_year_tree.insert('', 'end', text=index, values=[song, artists])
-
-            except Exception as e:
-                self.pop_songs_year_tree.insert('', 'end', values=[pop_songs_str])  # Insert error message directly into treeview
-                logging.error(f"Error: {e}")
-
-        else:
-            logging.info(f"No popular songs received for the year: {year}")
 
     def send_choice3(self):
         song = self.play_entry.get()
@@ -131,13 +194,12 @@ class Application:
         self.io_stream_server.flush()
 
         logging.info("Waiting for answer from server...")
-        number_of_playlists = self.io_stream_server.readline().rstrip('\n')
-        if number_of_playlists == "No playlists found.":
-            self.pop_songs_play["text"] = number_of_playlists
-            logging.info("No playlists found.")
-        else:
-            self.pop_songs_play["text"] = number_of_playlists
-            logging.info(f"Number of Spotify-Playlists: {number_of_playlists}")
+
+    def send_choice4(self):
+        self.io_stream_server.write("GRAPH\n")
+        self.io_stream_server.flush()
+
+        logging.info("Waiting for graph from server...")
 
 
 ################################################# Window creation #################################################
@@ -168,43 +230,6 @@ class Application:
 
         self.register_window_button = RoundedButton(frame, text="Register", command=self.create_register_screen, bg=BUTTON_COLOR, fg="white")
         self.register_window_button.grid(row=5, column=0, pady=5)
-
-    # def create_register_screen(self):
-    #     self.register_window = tk.Toplevel(window)
-    #     self.register_window.title("Register user")
-    #     self.register_window.geometry("400x400")
-    #     self.register_window.configure(bg=BACKGROUND_COLOR)
-    #     self.register_window.grid(pady=10)
-
-    #     self.register_window.grid_rowconfigure(0, weight=1)
-    #     self.register_window.grid_columnconfigure(0, weight=1)
-
-    #     self.register_username_label = tk.Label(self.register_window, text="Username:", bg=BACKGROUND_COLOR, fg="white")
-    #     self.register_username_label.pack()
-
-    #     self.register_username_entry = tk.Entry(self.register_window)
-    #     self.register_username_entry.pack()
-
-    #     self.register_nickname_label = tk.Label(self.register_window, text="Nickname:", bg=BACKGROUND_COLOR, fg="white")
-    #     self.register_nickname_label.pack()
-
-    #     self.register_nickname_entry = tk.Entry(self.register_window)
-    #     self.register_nickname_entry.pack()
-
-    #     self.register_email_label = tk.Label(self.register_window, text="Email:", bg=BACKGROUND_COLOR, fg="white")
-    #     self.register_email_label.pack()
-
-    #     self.register_email_entry = tk.Entry(self.register_window)
-    #     self.register_email_entry.pack()
-
-    #     self.register_password_label = tk.Label(self.register_window, text="Password:", bg=BACKGROUND_COLOR, fg="white")
-    #     self.register_password_label.pack()
-
-    #     self.register_password_entry = tk.Entry(self.register_window, show="*")
-    #     self.register_password_entry.pack()
-
-    #     self.register_button = RoundedButton(self.register_window, text="Register", command=self.send_register_info, bg=BUTTON_COLOR, fg="white")
-    #     self.register_button.pack()
 
     def create_register_screen(self):
         self.register_window = tk.Toplevel(window)
@@ -281,7 +306,7 @@ class Application:
         self.choice3_button = RoundedButton(self.window, text="Number of Spotify-playlists where song is found", command=self.choice3, bg=BUTTON_COLOR, fg="white", height=3, width=3, font=button_font)
         self.choice3_button.grid(row=2, column=0, padx=10, pady=5, sticky="ew")
     
-        self.choice4_button = RoundedButton(self.window, text="Graph of total streams per year", command=self.choice4, bg=BUTTON_COLOR, fg="white", height=3, width=3, font=button_font)
+        self.choice4_button = RoundedButton(self.window, text="Graph of total streams per year", command=self.send_choice4, bg=BUTTON_COLOR, fg="white", height=3, width=3, font=button_font)
         self.choice4_button.grid(row=2, column=1, padx=10, pady=5, sticky="ew")
     
         # Configure column weights to center the widgets
@@ -361,35 +386,10 @@ class Application:
         self.pop_songs_play = tk.Label(self.play_window)
         self.pop_songs_play.pack()
 
-    def choice4(self):
-        self.io_stream_server.write("GRAPH\n")
-        self.io_stream_server.flush()
-
-        logging.info("Waiting for graph from server...")
-        img_string = self.io_stream_server.readline().rstrip('\n')
-
-        img_bytes = base64.b64decode(img_string)
-
-        img = Image.open(io.BytesIO(img_bytes))
-
-        window_width = 800
-        window_height = 600
-        img = img.resize((window_width, window_height))
-        img = ImageTk.PhotoImage(img)
-
-        self.graph_window = tk.Toplevel(window)
-        self.graph_window.title("Streams per year")
-        self.graph_window.geometry("900x700")
-        self.graph_window.configure(bg=BACKGROUND_COLOR)
-
-
-        img_label = tk.Label(self.graph_window, image=img)
-        img_label.image = img
-        img_label.pack()
-
 
     def close_connection(self):
         logging.info("Close connection with server...")
+        self.keep_threads_alive = False
         self.io_stream_server.write("CLOSE\n")
         self.io_stream_server.flush()
         self.io_stream_server.close()

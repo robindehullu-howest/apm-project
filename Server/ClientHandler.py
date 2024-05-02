@@ -11,13 +11,13 @@ import base64
 import json
 import logging
 import ast
-import hashlib
+from typing import List
 
 from Models.User import User
 
-SPOTIFY_DATA_PATH = "../Data/spotify_data.csv"
-USERS_PATH = "../Data/users.txt"
-LOGGED_USERS_PATH = "../Data/logged_users.txt"
+SPOTIFY_DATA_PATH = "./Data/spotify_data.csv"
+USERS_PATH = "./Data/users.txt"
+LOGGED_USERS_PATH = "./Data/logged_users.txt"
 
 search_counts = {
     "Artiest": 0,
@@ -73,35 +73,22 @@ class ClientHandler(threading.Thread):
     def close_socket(self):
         self.server_closing = True
 
-    @staticmethod
-    def __register_user(username: str, email: str, password: str, nickname: str):
-        user = User(username, email, password, nickname)
-        with open(USERS_PATH, mode='ab') as my_writer_obj:
-            pickle.dump(user, my_writer_obj)
+    def send_messages(self, topic: str, messages: List):
+        self.io_stream_client.write(f"{topic}\n")
+        for message in messages:
+            self.io_stream_client.write(f"{message}\n")
+        self.io_stream_client.flush()
 
     def __handle_login(self):
         identifier = self.io_stream_client.readline().rstrip('\n')
         password = self.io_stream_client.readline().rstrip('\n')
         is_valid = self.__check_credentials(User(identifier, identifier, password))
-        message = "Login successful\n" if is_valid else "Login failed\n"
-        self.io_stream_client.write(message)
-        self.io_stream_client.flush()
+        message = "Login successful" if is_valid else "Login failed"
+        self.send_messages("LOGIN", [message])
         self.__print_message_gui_server(message)
 
         if is_valid:
             self.__store_logged_user(identifier)
-
-    def __handle_register(self):
-        username = self.io_stream_client.readline().rstrip('\n')
-        nickname = self.io_stream_client.readline().rstrip('\n')
-        email = self.io_stream_client.readline().rstrip('\n')
-        password = self.io_stream_client.readline().rstrip('\n')
-
-        self.__register_user(username, email, password, nickname)
-        message = "Registration successful\n"
-        self.io_stream_client.write(message)
-        self.io_stream_client.flush()
-        self.__print_message_gui_server(message)
 
     def __store_logged_user(self, identifier: str):
         with open(LOGGED_USERS_PATH, "a") as file:
@@ -120,49 +107,51 @@ class ClientHandler(threading.Thread):
                     break
         return False
 
+    def __handle_register(self):
+        username = self.io_stream_client.readline().rstrip('\n')
+        nickname = self.io_stream_client.readline().rstrip('\n')
+        email = self.io_stream_client.readline().rstrip('\n')
+        password = self.io_stream_client.readline().rstrip('\n')
+
+        self.__register_user(username, email, password, nickname)
+        message = "Registration successful"
+        self.send_messages("REGISTRATION", [message])
+        self.__print_message_gui_server(message)
+
+    @staticmethod
+    def __register_user(username: str, email: str, password: str, nickname: str):
+        user = User(username, email, password, nickname)
+        with open(USERS_PATH, mode='ab') as my_writer_obj:
+            pickle.dump(user, my_writer_obj)
+
     def __handle_artist(self):
         artist = self.io_stream_client.readline().rstrip('\n')
         popular_songs = self.__get_popular_songs_of_artist(artist)
-
-        self.io_stream_client.write(f"{artist}\n")
-        if popular_songs is not None:
-            self.io_stream_client.write(f"{';'.join(popular_songs)}\n")
-            # self.io_stream_client.write("Artist and songs sent successfully\n")
-        else:
-            self.io_stream_client.write("No songs found.\n")
-        self.io_stream_client.flush()
+        self.send_messages("ARTIST", [popular_songs])
 
     def __get_popular_songs_of_artist(self, artist):
         artist_data = self.data[self.data['artist(s)_name'].apply(lambda x: artist.lower() in x.lower())]
 
         if artist_data.empty:
-            return None
+            return "No songs found."
 
         sorted_data = artist_data.sort_values(by='streams', ascending=False)
 
         top_songs = sorted_data['track_name'].head(5).tolist()
-
-        print(f"Top songs of {artist}: {top_songs}")
+        top_songs = ';'.join(top_songs)
 
         return top_songs
     
     def __handle_year(self):
         year = int(self.io_stream_client.readline().rstrip('\n'))
-        popular_songs = self.__get_popular_songs_of_year(year)
-
-        self.io_stream_client.write(f"{year}\n")
-        if popular_songs is not None:
-            popular_songs_json = json.dumps(popular_songs)
-            self.io_stream_client.write(popular_songs_json + "\n")
-        else:
-            self.io_stream_client.write("No songs found.\n")
-        self.io_stream_client.flush()
+        popular_songs = json.dumps(self.__get_popular_songs_of_year(year))
+        self.send_messages("YEAR", [popular_songs])
 
     def __get_popular_songs_of_year(self, year) -> dict:
         year_data = self.data[self.data['released_year'] == year]
 
         if year_data.empty:
-            return None
+            return "No songs found."
 
         sorted_data = year_data.sort_values(by='streams', ascending=False)
 
@@ -185,22 +174,16 @@ class ClientHandler(threading.Thread):
         song = self.io_stream_client.readline().rstrip('\n')
         number_playlists = self.__get_playlists_of_song(song)
 
-        if number_playlists is not None:
-            self.io_stream_client.write(f"{number_playlists}\n")
-        else:
-            self.io_stream_client.write("No playlists found.\n")
-        
-        self.io_stream_client.flush()
+        self.send_messages("PLAYLIST", [number_playlists])
 
 
     def __get_playlists_of_song(self, song):
         playlist_data = self.data[self.data['track_name'].str.lower() == song.lower()]
 
         if playlist_data.empty:
-            return None
+            return "No playlists found."
         
         number_playlists = playlist_data.iloc[0]['in_spotify_playlists']
-        logging.info(f"Number of Spotify playlists for '{song}': {number_playlists}")
         return number_playlists
 
 
@@ -224,8 +207,7 @@ class ClientHandler(threading.Thread):
 
         img_string = base64.b64encode(img_bytes.read()).decode()
 
-        self.io_stream_client.write(f"{img_string}\n")
-        self.io_stream_client.flush()
+        self.send_messages("GRAPH", [img_string])
 
 
     def __print_message_gui_server(self, message):
