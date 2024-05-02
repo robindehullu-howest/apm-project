@@ -13,7 +13,7 @@ from Server import Server
 from ClientHandler import search_counts
 
 
-LOGGED_USERS_PATH = "./Data/logged_users.txt"
+LOGGED_USERS_PATH = "../Data/logged_users.txt"
 
 BUTTON_COLOR = "#1DB954"
 BACKGROUND_COLOR = "#191414"

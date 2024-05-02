@@ -14,6 +14,9 @@ import threading
 BUTTON_COLOR = "#1DB954"
 BUTTON_COLOR_ENTER = "#1ED760"
 BACKGROUND_COLOR = "#191414"
+BACKGROUND_COLOR_ENTRY = "#121212"
+MAIN_BUTTON_FONT = ("Arial", 14, "bold")
+LABEL_FONT = ("Arial", 11)
 
 class RoundedButton(tk.Button):
     def __init__(self, master=None, **kwargs):
@@ -228,7 +231,7 @@ class Application:
         admin_label = tk.Label(broadcast_window, text="Message from Server Admin:", bg=BACKGROUND_COLOR, fg="white", font=title_font)
         admin_label.grid(row=1, column=1, pady=25)
 
-        message_label = tk.Label(broadcast_window, text=message, bg="white", fg="black", font=message_font, padx=2, pady=5, wraplength=250)
+        message_label = tk.Label(broadcast_window, text=message, bg="white", fg="black", font=message_font, padx=2, pady=5, wraplength=250, background=BACKGROUND_COLOR_ENTRY, fg="white")
         message_label.grid(row=2, column=1)
 
         close_button = tk.Button(broadcast_window, text="Close", command=broadcast_window.destroy, bg=BUTTON_COLOR, fg="white", font=button_font)
@@ -244,16 +247,16 @@ class Application:
         frame.grid_rowconfigure(0, weight=1)
         frame.grid_columnconfigure(0, weight=1)
 
-        self.identifier_label = tk.Label(frame, text="Username or email:", bg=BACKGROUND_COLOR, fg="white")
+        self.identifier_label = tk.Label(frame, text="Username or email:", bg=BACKGROUND_COLOR, fg="white", font=LABEL_FONT)
         self.identifier_label.grid(row=0, column=0, pady=(5, 2), sticky="w")
 
-        self.identifier_entry = tk.Entry(frame)
+        self.identifier_entry = tk.Entry(frame, background=BACKGROUND_COLOR_ENTRY, fg="white")
         self.identifier_entry.grid(row=1, column=0, pady=(0, 5), padx=5, sticky="ew")
 
-        self.password_label = tk.Label(frame, text="Password:", bg=BACKGROUND_COLOR, fg="white")
+        self.password_label = tk.Label(frame, text="Password:", bg=BACKGROUND_COLOR, fg="white", font=LABEL_FONT)
         self.password_label.grid(row=2, column=0, pady=(5, 2), sticky="w")
 
-        self.login_password_entry = tk.Entry(frame, show="*")
+        self.login_password_entry = tk.Entry(frame, show="*", background=BACKGROUND_COLOR_ENTRY, fg="white")
         self.login_password_entry.grid(row=3, column=0, pady=(0, 5), padx=5, sticky="ew")
 
         self.login_button = RoundedButton(frame, text="Login", command=self.send_login_info, bg=BUTTON_COLOR, fg="white")
@@ -276,28 +279,28 @@ class Application:
         frame.grid_rowconfigure(0, weight=1)
         frame.grid_columnconfigure(0, weight=1)
 
-        self.register_username_label = tk.Label(frame, text="Username:", bg=BACKGROUND_COLOR, fg="white")
+        self.register_username_label = tk.Label(frame, text="Username:", bg=BACKGROUND_COLOR, fg="white", font=LABEL_FONT)
         self.register_username_label.grid(row=0, column=0, pady=(5, 2), sticky="w")
 
-        self.register_username_entry = tk.Entry(frame)
+        self.register_username_entry = tk.Entry(frame, background=BACKGROUND_COLOR_ENTRY, fg="white")
         self.register_username_entry.grid(row=1, column=0, pady=(0, 5), padx=5, sticky="ew")
 
-        self.register_nickname_label = tk.Label(frame, text="Nickname:", bg=BACKGROUND_COLOR, fg="white")
+        self.register_nickname_label = tk.Label(frame, text="Nickname:", bg=BACKGROUND_COLOR, fg="white", font=LABEL_FONT)
         self.register_nickname_label.grid(row=2, column=0, pady=(5, 2), sticky="w")
 
-        self.register_nickname_entry = tk.Entry(frame)
+        self.register_nickname_entry = tk.Entry(frame, background=BACKGROUND_COLOR_ENTRY, fg="white")
         self.register_nickname_entry.grid(row=3, column=0, pady=(0, 5), padx=5, sticky="ew")
 
-        self.register_email_label = tk.Label(frame, text="Email:", bg=BACKGROUND_COLOR, fg="white")
+        self.register_email_label = tk.Label(frame, text="Email:", bg=BACKGROUND_COLOR, fg="white", font=LABEL_FONT)
         self.register_email_label.grid(row=4, column=0, pady=(5, 2), sticky="w")
 
-        self.register_email_entry = tk.Entry(frame)
+        self.register_email_entry = tk.Entry(frame, background=BACKGROUND_COLOR_ENTRY, fg="white")
         self.register_email_entry.grid(row=5, column=0, pady=(0, 5), padx=5, sticky="ew")
 
-        self.register_password_label = tk.Label(frame, text="Password:", bg=BACKGROUND_COLOR, fg="white")
+        self.register_password_label = tk.Label(frame, text="Password:", bg=BACKGROUND_COLOR, fg="white", font=LABEL_FONT)
         self.register_password_label.grid(row=6, column=0, pady=(5, 2), sticky="w")
 
-        self.register_password_entry = tk.Entry(frame, show="*")
+        self.register_password_entry = tk.Entry(frame, show="*", background=BACKGROUND_COLOR_ENTRY, fg="white")
         self.register_password_entry.grid(row=7, column=0, pady=(0, 5), padx=5, sticky="ew")
 
         self.register_button = RoundedButton(frame, text="Register", command=self.send_register_info, bg=BUTTON_COLOR, fg="white")
@@ -306,7 +309,6 @@ class Application:
 
 
     def create_main_menu(self):
-        # Hide previous widgets
         self.identifier_label.pack_forget()
         self.identifier_entry.pack_forget()
         self.password_label.pack_forget()
@@ -314,33 +316,26 @@ class Application:
         self.login_button.pack_forget()
         self.register_window_button.pack_forget()
     
-        # Set window geometry
         self.window.geometry("1000x600")
     
-        # Load and display image
         script_dir = os.path.dirname(__file__)
         image_path = os.path.join(script_dir, "Images", "spotify-logo.png")
         self.img = ImageTk.PhotoImage(Image.open(image_path))
         self.img_label = tk.Label(self.window, image=self.img, bg=BACKGROUND_COLOR)
-        self.img_label.grid(row=0, column=0, columnspan=2, pady=5)  # over 2 kolommen
+        self.img_label.grid(row=0, column=0, columnspan=2, pady=5)
     
-        # Define button font
-        button_font = ("Arial", 12, "bold")
-    
-        # Create and place buttons
-        self.choice1_button = RoundedButton(self.window, text="Get popular songs of artist", command=self.choice1, bg=BUTTON_COLOR, fg="white", height=3, width=3, font=button_font)
+        self.choice1_button = RoundedButton(self.window, text="Get popular songs of artist", command=self.choice1, bg=BUTTON_COLOR, fg="white", height=3, width=3, font=MAIN_BUTTON_FONT)
         self.choice1_button.grid(row=1, column=0, padx=10, pady=5, sticky="ew")
     
-        self.choice2_button = RoundedButton(self.window, text="Most popular songs per year", command=self.choice2, bg=BUTTON_COLOR, fg="white", height=3, width=3, font=button_font)
+        self.choice2_button = RoundedButton(self.window, text="Most popular songs per year", command=self.choice2, bg=BUTTON_COLOR, fg="white", height=3, width=3, font=MAIN_BUTTON_FONT)
         self.choice2_button.grid(row=1, column=1, padx=10, pady=5, sticky="ew")
     
-        self.choice3_button = RoundedButton(self.window, text="Number of Spotify-playlists where song is found", command=self.choice3, bg=BUTTON_COLOR, fg="white", height=3, width=3, font=button_font)
+        self.choice3_button = RoundedButton(self.window, text="Number of Spotify-playlists where song is found", command=self.choice3, bg=BUTTON_COLOR, fg="white", height=3, width=3, font=MAIN_BUTTON_FONT)
         self.choice3_button.grid(row=2, column=0, padx=10, pady=5, sticky="ew")
     
-        self.choice4_button = RoundedButton(self.window, text="Graph of total streams per year", command=self.send_choice4, bg=BUTTON_COLOR, fg="white", height=3, width=3, font=button_font)
+        self.choice4_button = RoundedButton(self.window, text="Graph of total streams per year", command=self.send_choice4, bg=BUTTON_COLOR, fg="white", height=3, width=3, font=MAIN_BUTTON_FONT)
         self.choice4_button.grid(row=2, column=1, padx=10, pady=5, sticky="ew")
     
-        # Configure column weights to center the widgets
         self.window.grid_columnconfigure(0, weight=1)
         self.window.grid_columnconfigure(1, weight=1)
 
@@ -353,23 +348,34 @@ class Application:
         self.artist_window.geometry("800x400")
         self.artist_window.configure(bg=BACKGROUND_COLOR)
 
-        self.artist_label = tk.Label(self.artist_window, text="Artist:", bg=BACKGROUND_COLOR, fg="white")
-        self.artist_label.pack()
-        self.artist_entry = tk.Entry(self.artist_window)
-        self.artist_entry.pack()
-        # w = Spinbox(self.artist_window, from_=0, to=50)
-        # w.pack()
+        frame = tk.Frame(self.artist_window, bg=BACKGROUND_COLOR)
+        frame.grid(pady=10)
 
-        self.songs_button = RoundedButton(self.artist_window, text="Get popular songs for artist", command=self.send_choice1, bg=BUTTON_COLOR, fg="white")
-        self.songs_button.pack()
+        self.artist_window.grid_rowconfigure(0, weight=1)
+        self.artist_window.grid_columnconfigure(0, weight=1)
+        frame.grid_rowconfigure(0, weight=1)
+        frame.grid_columnconfigure(0, weight=1)
 
-        pop_songs_artist_label = tk.Label(self.artist_window, text="Popular Songs:", bg=BACKGROUND_COLOR, fg="white")
-        pop_songs_artist_label.pack()
 
-        self.pop_songs_artist_tree = ttk.Treeview(self.artist_window, columns=('Number','Popular Songs'))
+        self.artist_label = tk.Label(frame, text="Artist:", bg=BACKGROUND_COLOR, fg="white", font=LABEL_FONT)
+        self.artist_label.grid(row=0, column=0, pady=(5, 2), sticky="w")
+
+        self.artist_entry = tk.Entry(frame, width=2, background=BACKGROUND_COLOR_ENTRY, fg="white")
+        self.artist_entry.grid(row=1, column=0, pady=(0, 5), padx=5, sticky="ew")
+
+        self.songs_button = RoundedButton(frame, text="Get popular songs for artist", command=self.send_choice1, bg=BUTTON_COLOR, fg="white")
+        self.songs_button.grid(row=2, column=0, pady=(5, 2), padx=5, sticky="ew")
+
+
+        pop_songs_artist_label = tk.Label(frame, text="Popular Songs:", bg=BACKGROUND_COLOR, fg="white", font=LABEL_FONT)
+        pop_songs_artist_label.grid(row=3, column=0, pady=(0, 5), padx=5, sticky="ew")
+
+        self.pop_songs_artist_tree = ttk.Treeview(frame, columns=('Number','Popular Songs'))
         self.pop_songs_artist_tree.heading('#0', text='Number')
         self.pop_songs_artist_tree.heading('#1', text='Popular Songs')
-        self.pop_songs_artist_tree.pack()
+        self.pop_songs_artist_tree.column('#2', width=0, stretch=tk.NO)
+        self.pop_songs_artist_tree.grid(row=4, column=0, pady=(0, 5), padx=5, sticky="ew")
+
 
     def choice2(self):
         self.year_window = tk.Toplevel(window)
@@ -377,24 +383,34 @@ class Application:
         self.year_window.geometry("800x400")
         self.year_window.configure(bg=BACKGROUND_COLOR)
 
-        self.year_label = tk.Label(self.year_window, text="Enter year:", bg=BACKGROUND_COLOR, fg="white")
-        self.year_label.pack()
-        self.year_entry = tk.Entry(self.year_window)
-        self.year_entry.pack()
-        # w = Spinbox(self.year_window, from_=0, to=50)
-        # w.pack()
+        frame = tk.Frame(self.year_window, bg=BACKGROUND_COLOR)
+        frame.grid(pady=10)
 
-        self.songs_button = RoundedButton(self.year_window, text="Get popular songs", command=self.send_choice2, bg=BUTTON_COLOR, fg="white")
-        self.songs_button.pack()
+        self.year_window.grid_rowconfigure(0, weight=1)
+        self.year_window.grid_columnconfigure(0, weight=1)
+        frame.grid_rowconfigure(0, weight=1)
+        frame.grid_columnconfigure(0, weight=1)
 
-        pop_songs_year_label = tk.Label(self.year_window, text="Popular Songs:", bg=BACKGROUND_COLOR, fg="white")
-        pop_songs_year_label.pack()
+        self.year_label = tk.Label(frame, text="Enter year:", bg=BACKGROUND_COLOR, fg="white", font=LABEL_FONT)
+        self.year_label.grid(row=0, column=0, pady=(5, 2), sticky="w")
 
-        self.pop_songs_year_tree = ttk.Treeview(self.year_window, columns=('Number','Popular Songs','Artist(s)'))
+        self.year_entry = tk.Entry(frame, background=BACKGROUND_COLOR_ENTRY, fg="white")
+        self.year_entry.grid(row=1, column=0, pady=(0, 5), sticky="ew")
+        
+        self.songs_button = RoundedButton(frame, text="Get popular songs", command=self.send_choice2, bg=BUTTON_COLOR, fg="white")
+        self.songs_button.grid(row=2, column=0, pady=(5, 2), sticky="ew")
+
+
+        pop_songs_year_label = tk.Label(frame, text="Popular Songs:", bg=BACKGROUND_COLOR, fg="white", font=LABEL_FONT)
+        pop_songs_year_label.grid(row=3, column=0, pady=(5, 2), sticky="ew")
+
+        self.pop_songs_year_tree = ttk.Treeview(frame, columns=('Number','Popular Songs','Artist(s)'))
         self.pop_songs_year_tree.heading('#0', text='Number')
         self.pop_songs_year_tree.heading('#1', text='Popular Songs')
         self.pop_songs_year_tree.heading('#2', text='Artist(s)')
-        self.pop_songs_year_tree.pack()
+        self.pop_songs_year_tree.column('#3', width=0, stretch=tk.NO)
+        self.pop_songs_year_tree.grid(row=4, column=0, pady=(0, 5), sticky="ew")
+
 
     def choice3(self):
         self.play_window = tk.Toplevel(window)
@@ -402,20 +418,29 @@ class Application:
         self.play_window.geometry("400x400")
         self.play_window.configure(bg=BACKGROUND_COLOR)
 
+        frame = tk.Frame(self.play_window, bg=BACKGROUND_COLOR)
+        frame.grid(pady=10)
 
-        self.play_label = tk.Label(self.play_window, text="Enter song:", bg=BACKGROUND_COLOR, fg="white")
-        self.play_label.pack()
-        self.play_entry = tk.Entry(self.play_window)
-        self.play_entry.pack()
+        self.play_window.grid_rowconfigure(0, weight=1)
+        self.play_window.grid_columnconfigure(0, weight=1)
+        frame.grid_rowconfigure(0, weight=1)
+        frame.grid_columnconfigure(0, weight=1)
 
-        self.songs_button = RoundedButton(self.play_window, text="Get Spotify-playlists", command=self.send_choice3, bg=BUTTON_COLOR, fg="white")
-        self.songs_button.pack()
 
-        pop_songs_play_label = tk.Label(self.play_window, text="Number of Spotify-Playlists:", bg=BACKGROUND_COLOR, fg="white")
-        pop_songs_play_label.pack()
+        self.play_label = tk.Label(frame, text="Enter song:", bg=BACKGROUND_COLOR, fg="white", font=LABEL_FONT)
+        self.play_label.grid(row=0, column=0, pady=(5, 2), sticky="w")
 
-        self.pop_songs_play = tk.Label(self.play_window)
-        self.pop_songs_play.pack()
+        self.play_entry = tk.Entry(frame, background=BACKGROUND_COLOR_ENTRY, fg="white")
+        self.play_entry.grid(row=1, column=0, pady=(0, 5), padx=5, sticky="ew")
+
+        self.songs_button = RoundedButton(frame, text="Get Spotify-playlists", command=self.send_choice3, bg=BUTTON_COLOR, fg="white")
+        self.songs_button.grid(row=2, column=0, pady=5)
+
+        pop_songs_play_label = tk.Label(frame, text="Number of Spotify-Playlists:", bg=BACKGROUND_COLOR, fg="white", font=LABEL_FONT)
+        pop_songs_play_label.grid(row=3, column=0, pady=(5, 2), sticky="w")
+
+        self.pop_songs_play = tk.Label(frame, background=BACKGROUND_COLOR, fg="white", font=("Arial", 16, "bold"))
+        self.pop_songs_play.grid(row=4, column=0, pady=(5, 2), sticky="ew")
 
 
     def close_connection(self):
