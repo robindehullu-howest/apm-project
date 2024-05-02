@@ -231,7 +231,7 @@ class Application:
         admin_label = tk.Label(broadcast_window, text="Message from Server Admin:", bg=BACKGROUND_COLOR, fg="white", font=title_font)
         admin_label.grid(row=1, column=1, pady=25)
 
-        message_label = tk.Label(broadcast_window, text=message, bg="white", fg="black", font=message_font, padx=2, pady=5, wraplength=250, background=BACKGROUND_COLOR_ENTRY, fg="white")
+        message_label = tk.Label(broadcast_window, text=message, font=message_font, padx=2, pady=5, wraplength=250, background=BACKGROUND_COLOR_ENTRY, fg="white")
         message_label.grid(row=2, column=1)
 
         close_button = tk.Button(broadcast_window, text="Close", command=broadcast_window.destroy, bg=BUTTON_COLOR, fg="white", font=button_font)

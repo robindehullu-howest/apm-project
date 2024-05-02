@@ -17,6 +17,7 @@ LOGGED_USERS_PATH = "../Data/logged_users.txt"
 
 BUTTON_COLOR = "#1DB954"
 BACKGROUND_COLOR = "#191414"
+BACKGROUND_COLOR_ENTRY = "#121212"
 
 class ServerWindow(Frame):
     def __init__(self, master=None):
@@ -143,7 +144,7 @@ class ServerWindow(Frame):
         message_label = Label(self.broadcast_window, text="Message:", bg=BACKGROUND_COLOR, fg="white")
         message_label.grid(row=1, column=1)
 
-        message_entry = Entry(self.broadcast_window, bg="white", fg="black")
+        message_entry = Entry(self.broadcast_window, fg="white", bg=BACKGROUND_COLOR_ENTRY)
         message_entry.grid(row=2, column=1)
 
         broadcast_button = Button(self.broadcast_window, text="Broadcast", command=lambda: self.broadcast_message(message_entry.get()), bg=BUTTON_COLOR, fg="white")
