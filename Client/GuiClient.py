@@ -72,6 +72,9 @@ class Application:
             
             if topic == "CLOSE":
                 self.close_connection()
+            if topic == "BROADCAST":
+                message = self.message_queue.get()
+                self.process_broadcast_message(message)
             if topic == "LOGIN":
                 login_reply = self.message_queue.get()
                 self.process_login_reply(login_reply)
@@ -90,6 +93,9 @@ class Application:
             if topic == "GRAPH":
                 image = self.message_queue.get()
                 self.process_graph_reply(image)
+
+    def process_broadcast_message(self, message):
+        self.create_broadcast_popup(message)
 
     def process_login_reply(self, login_reply):
         if login_reply == "Login successful":
@@ -203,6 +209,31 @@ class Application:
 
 
 ################################################# Window creation #################################################
+
+    def create_broadcast_popup(self, message):
+        broadcast_window = tk.Toplevel(self.window)
+        broadcast_window.title("Broadcast message")
+        broadcast_window.geometry("300x200")
+        broadcast_window.configure(bg=BACKGROUND_COLOR)
+
+        broadcast_window.grid_rowconfigure(0, weight=1)
+        broadcast_window.grid_rowconfigure(4, weight=1)
+        broadcast_window.grid_columnconfigure(0, weight=1)
+        broadcast_window.grid_columnconfigure(2, weight=1)
+
+        title_font = ("Arial", 14, "bold")
+        message_font = ("Arial", 11, "italic")
+        button_font = ("Arial", 11, "bold")
+
+        admin_label = tk.Label(broadcast_window, text="Message from Server Admin:", bg=BACKGROUND_COLOR, fg="white", font=title_font)
+        admin_label.grid(row=1, column=1, pady=25)
+
+        message_label = tk.Label(broadcast_window, text=message, bg="white", fg="black", font=message_font, padx=2, pady=5, wraplength=250)
+        message_label.grid(row=2, column=1)
+
+        close_button = tk.Button(broadcast_window, text="Close", command=broadcast_window.destroy, bg=BUTTON_COLOR, fg="white", font=button_font)
+        close_button.grid(row=3, column=1, pady=25)
+
 
     def create_login_screen(self):
         frame = tk.Frame(self.window, bg=BACKGROUND_COLOR)

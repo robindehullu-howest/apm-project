@@ -65,6 +65,11 @@ class Server(threading.Thread):
             self.print_message_gui_server(ex)
             logging.error(f"Error in Server: {ex}")
 
+    def broadcast_message(self, message):
+        active_client_handlers = self.get_active_client_handlers()
+        for client_handler in active_client_handlers:
+            client_handler.send_messages("BROADCAST", [message])
+
     def print_message_gui_server(self, message):
         self.message_queue.put(f"Server:> {message}")
 

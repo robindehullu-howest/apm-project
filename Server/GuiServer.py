@@ -46,11 +46,14 @@ class ServerWindow(Frame):
         self.master.start_button = tk.Button(frame, text="Start server", command=self.start_server_window, bg=BUTTON_COLOR, fg="white", font=button_font)
         self.master.start_button.grid(row=0, column=0, pady=(5, 5), padx=(5, 5), sticky=N + S + E + W)
 
-        self.master.users_button = tk.Button(frame, text="Get logged in users", command=self.ingelogde_users, bg=BUTTON_COLOR, fg="white", font=button_font)
+        self.master.users_button = tk.Button(frame, text="Get logged in users", command=self.active_users_window, bg=BUTTON_COLOR, fg="white", font=button_font)
         self.master.users_button.grid(row=1, column=0, pady=(5, 5), padx=(5, 5), sticky=N + S + E + W)
 
-        self.master.popularity_button = tk.Button(frame, text="View searches", command=self.view_searches, bg=BUTTON_COLOR, fg="white", font=button_font)
+        self.master.popularity_button = tk.Button(frame, text="View searches", command=self.searches_window, bg=BUTTON_COLOR, fg="white", font=button_font)
         self.master.popularity_button.grid(row=2, column=0, pady=(5, 5), padx=(5, 5), sticky=N + S + E + W)
+
+        self.master.broadcast_message_button = tk.Button(frame, text="Broadcast message", command=self.broadcast_message_window, bg=BUTTON_COLOR, fg="white", font=button_font)
+        self.master.broadcast_message_button.grid(row=3, column=0, pady=(5, 5), padx=(5, 5), sticky=N + S + E + W)
 
 
     def start_server_window(self):
@@ -84,7 +87,7 @@ class ServerWindow(Frame):
 
         self.start_stop_server()
 
-    def ingelogde_users(self):
+    def active_users_window(self):
         users_window = tk.Toplevel(self.master)
         users_window.title("Logged-in Users")
         users_window.geometry("300x200")
@@ -107,7 +110,7 @@ class ServerWindow(Frame):
         close_button = Button(users_window, text="Close", command=users_window.destroy, bg=BUTTON_COLOR, fg="white")
         close_button.pack(pady=10)
 
-    def view_searches(self):
+    def searches_window(self):
         global search_counts
         searches_window = tk.Toplevel(self.master)
         searches_window.title("Searches")
@@ -125,6 +128,31 @@ class ServerWindow(Frame):
 
         close_button = Button(searches_window, text="Close", command=searches_window.destroy, bg=BUTTON_COLOR, fg="white")
         close_button.pack(pady=10)
+
+    def broadcast_message_window(self):
+        self.broadcast_window = tk.Toplevel(self.master)
+        self.broadcast_window.title("Broadcast message")
+        self.broadcast_window.geometry("300x200")
+        self.broadcast_window.configure(bg=BACKGROUND_COLOR)
+
+        self.broadcast_window.grid_rowconfigure(0, weight=1)
+        self.broadcast_window.grid_rowconfigure(3, weight=1)
+        self.broadcast_window.grid_columnconfigure(0, weight=1)
+        self.broadcast_window.grid_columnconfigure(2, weight=1)
+
+        message_label = Label(self.broadcast_window, text="Message:", bg=BACKGROUND_COLOR, fg="white")
+        message_label.grid(row=1, column=1)
+
+        message_entry = Entry(self.broadcast_window, bg="white", fg="black")
+        message_entry.grid(row=2, column=1)
+
+        broadcast_button = Button(self.broadcast_window, text="Broadcast", command=lambda: self.broadcast_message(message_entry.get()), bg=BUTTON_COLOR, fg="white")
+        broadcast_button.grid(row=3, column=1, pady=10)
+
+    def broadcast_message(self, message):
+        if self.server is not None:
+            self.server.broadcast_message(message)
+        self.broadcast_window.destroy()
 
     def start_server(self):
         self.server = Server(socket.gethostname(), 9999, self.messages_queue)
