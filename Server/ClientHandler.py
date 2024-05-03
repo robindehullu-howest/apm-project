@@ -1,18 +1,18 @@
-import sys
-import os
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-import threading
-import pickle
-import pandas as pd
-import matplotlib.pyplot as plt
 import io
-import base64
 import json
 import logging
+import os
+import sys
+import threading
+import base64
 import ast
 from typing import List
 
+import matplotlib.pyplot as plt
+import pandas as pd
+import pickle
+
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from Models.User import User
 
 SPOTIFY_DATA_PATH = "./Data/spotify_data.csv"
@@ -45,7 +45,7 @@ class ClientHandler(threading.Thread):
 
         command_handlers = {
             "LOGIN": self.__handle_login,
-            "REGISTER": self.__handle_register,
+            "REGISTRATION": self.__handle_register,
             "ARTIST": self.__handle_artist,
             "YEAR": self.__handle_year,
             "PLAYLIST": self.__handle_playlist,
@@ -59,9 +59,10 @@ class ClientHandler(threading.Thread):
 
             if topic in command_handlers:
                 command_handlers[topic]()
+            if topic in SEARCH_COUNTS:
                 SEARCH_COUNTS[topic] += 1
+                self.__print_message_gui_server(f"Times requested: Artist: {SEARCH_COUNTS['ARTIST']}, Year: {SEARCH_COUNTS['YEAR']}, Playlist: {SEARCH_COUNTS['PLAYLIST']}, Graph: {SEARCH_COUNTS['GRAPH']}")
 
-            self.__print_message_gui_server(f"Times requested: Artist: {SEARCH_COUNTS['ARTIST']}, Year: {SEARCH_COUNTS['YEAR']}, Playlist: {SEARCH_COUNTS['PLAYLIST']}, Graph: {SEARCH_COUNTS['GRAPH']}")
 
             topic = self.read_line_from_client()
 
@@ -92,15 +93,13 @@ class ClientHandler(threading.Thread):
 
     def __store_logged_user(self, identifier: str):
         with open(LOGGED_USERS_PATH, "a") as file:
-            file.write(f"Username: {identifier}\n")
+            file.write(f"Identifier: {identifier}\n")
     
     def __check_credentials(self, input_user: User):
         with open(USERS_PATH, mode='rb') as my_reader_obj:
             while True:
                 try:
                     stored_user = pickle.load(my_reader_obj)
-                    print(f"Stored user: {stored_user}")
-                    print(f"Input user: {input_user}")
                     if stored_user == input_user:
                         return True
                 except EOFError:

@@ -1,13 +1,12 @@
-import sys
 import os
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
+import sys
 import logging
 import socket
-import pickle
 import threading
+
 import pandas as pd
 
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from ClientHandler import ClientHandler
 
 logging.basicConfig(level=logging.INFO)
@@ -23,6 +22,7 @@ class Server(threading.Thread):
         self.serversocket = None
 
         self.init_server()
+        self.clear_logged_users()
     
     def init_server(self):
         self.serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

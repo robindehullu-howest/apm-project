@@ -82,7 +82,7 @@ class Application:
             if topic == "LOGIN":
                 login_reply = self.message_queue.get()
                 self.process_login_reply(login_reply)
-            if topic == "REGISTER":
+            if topic == "REGISTRATION":
                 register_reply = self.message_queue.get()
                 self.process_register_reply(register_reply)
             if topic == "ARTIST":
@@ -106,7 +106,7 @@ class Application:
             self.create_main_menu()
 
     def process_register_reply(self, register_reply):
-        if register_reply == "Register successful" and self.register_window is not None:
+        if register_reply == "Registration successful" and self.register_window is not None:
             self.register_window.destroy()
 
     def process_artist_reply(self, popular_songs):
@@ -183,7 +183,7 @@ class Application:
         email = self.register_email_entry.get()
         password = hashlib.sha256(self.register_password_entry.get().encode()).hexdigest()
 
-        self.io_stream_server.write("REGISTER\n")
+        self.io_stream_server.write("REGISTRATION\n")
         self.io_stream_server.write(f"{username}\n")
         self.io_stream_server.write(f"{nickname}\n")
         self.io_stream_server.write(f"{email}\n")

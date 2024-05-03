@@ -1,18 +1,17 @@
-import sys
 import os
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
+import sys
 import logging
 import socket
 from queue import Queue
 from threading import Thread
+
 import tkinter as tk
 from tkinter import *
 
 from Server import Server
 from ClientHandler import SEARCH_COUNTS
 
-
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 LOGGED_USERS_PATH = "./Data/logged_users.txt"
 
 BUTTON_COLOR = "#1DB954"
